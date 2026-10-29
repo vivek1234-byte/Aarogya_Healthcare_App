@@ -7,6 +7,7 @@ import 'providers/theme_provider.dart';
 import 'providers/triage_provider.dart';
 import 'providers/chronic_provider.dart';
 
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/voice_triage_screen.dart';
 import 'screens/chronic_care_screen.dart';
@@ -50,8 +51,9 @@ class ArogyaSaathiApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,
-      initialRoute: '/',
+      initialRoute: '/login',
       routes: {
+        '/login': (context) => const LoginScreen(),
         '/': (context) => const HomeScreen(),
         '/triage': (context) => const VoiceTriageScreen(),
         '/chronic': (context) => const ChronicCareScreen(),

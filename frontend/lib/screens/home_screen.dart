@@ -62,6 +62,14 @@ class HomeScreen extends StatelessWidget {
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, size: 24),
             onPressed: () => themeProvider.toggleTheme(),
           ),
+          // Logout / Switch User
+          IconButton(
+            tooltip: 'Logout / Switch User',
+            icon: const Icon(Icons.logout_rounded, size: 22),
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+          ),
           const SizedBox(width: 8),
         ],
       ),
