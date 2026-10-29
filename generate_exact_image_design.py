@@ -119,10 +119,10 @@ html_content = f'''<!DOCTYPE html>
           <!-- TWO TOGGLE PILLS: [ 👤 Patient ]   [ 🧑‍⚕️ Other Login ] -->
           <div class="p-1 rounded-2xl bg-slate-100 flex items-center gap-1 mb-4">
             
-            <!-- Patient Pill (Active by default) -->
+            <!-- Patient / Family Pill (Active by default) -->
             <button type="button" onclick="setLoginType('patient')" id="tabPillPatient" class="flex-1 py-2.5 rounded-xl font-black text-xs bg-[#1E824C] text-white shadow-md shadow-[#1E824C]/25 flex items-center justify-center gap-1.5 transition-all">
               <span>👤</span>
-              <span>Patient</span>
+              <span>Patient / Family</span>
             </button>
 
             <!-- Other Login Pill (Inactive by default) -->
@@ -179,31 +179,25 @@ html_content = f'''<!DOCTYPE html>
             </div>
             <p class="text-center text-[11px] font-bold text-slate-500 mb-3">Login as</p>
 
-            <!-- 4 Role Option Cards Row (Health Worker, Doctor, Health Officer, Patient / Family) -->
-            <div class="grid grid-cols-4 gap-2">
+            <!-- 3 Role Option Cards Row (Health Worker, Doctor, Health Officer) -->
+            <div class="grid grid-cols-3 gap-2.5">
               
               <!-- Health Worker (Selected) -->
-              <button type="button" onclick="selectOtherRole('Health Worker', 'ASHA-RAMPUR-7821')" id="roleBtnWorker" class="p-2.5 rounded-2xl bg-[#E8F7F0] border-2 border-[#1E824C] flex flex-col items-center text-center transition-all shadow-xs">
-                <span class="text-lg mb-0.5">👩‍⚕️</span>
-                <span class="text-[10px] font-black text-[#1E824C] leading-tight">Health Worker</span>
+              <button type="button" onclick="selectOtherRole('Health Worker', 'ASHA-RAMPUR-7821')" id="roleBtnWorker" class="p-3 rounded-2xl bg-[#E8F7F0] border-2 border-[#1E824C] flex flex-col items-center text-center transition-all shadow-xs">
+                <span class="text-xl mb-1">👩‍⚕️</span>
+                <span class="text-[11px] font-black text-[#1E824C] leading-tight">Health Worker</span>
               </button>
 
               <!-- Doctor -->
-              <button type="button" onclick="selectOtherRole('Doctor', 'DR-VERMA-PHC-402')" id="roleBtnDoctor" class="p-2.5 rounded-2xl bg-[#F0F7F3] hover:bg-[#E8F7F0] border border-slate-200 flex flex-col items-center text-center transition-all">
-                <span class="text-lg mb-0.5">🩺</span>
-                <span class="text-[10px] font-bold text-slate-600 leading-tight">Doctor</span>
+              <button type="button" onclick="selectOtherRole('Doctor', 'DR-VERMA-PHC-402')" id="roleBtnDoctor" class="p-3 rounded-2xl bg-[#F0F7F3] hover:bg-[#E8F7F0] border border-slate-200 flex flex-col items-center text-center transition-all">
+                <span class="text-xl mb-1">🩺</span>
+                <span class="text-[11px] font-bold text-slate-600 leading-tight">Doctor</span>
               </button>
 
               <!-- Health Officer -->
-              <button type="button" onclick="selectOtherRole('Health Officer', 'OFFICER-DIST-881')" id="roleBtnOfficer" class="p-2.5 rounded-2xl bg-[#F0F7F3] hover:bg-[#E8F7F0] border border-slate-200 flex flex-col items-center text-center transition-all">
-                <span class="text-lg mb-0.5">👮</span>
-                <span class="text-[10px] font-bold text-slate-600 leading-tight">Health Officer</span>
-              </button>
-
-              <!-- Patient / Family -->
-              <button type="button" onclick="selectOtherRole('Patient / Family', '9876543210')" id="roleBtnFamily" class="p-2.5 rounded-2xl bg-[#F0F7F3] hover:bg-[#E8F7F0] border border-slate-200 flex flex-col items-center text-center transition-all">
-                <span class="text-lg mb-0.5">👥</span>
-                <span class="text-[10px] font-bold text-slate-600 leading-tight">Patient / Family</span>
+              <button type="button" onclick="selectOtherRole('Health Officer', 'OFFICER-DIST-881')" id="roleBtnOfficer" class="p-3 rounded-2xl bg-[#F0F7F3] hover:bg-[#E8F7F0] border border-slate-200 flex flex-col items-center text-center transition-all">
+                <span class="text-xl mb-1">👮</span>
+                <span class="text-[11px] font-bold text-slate-600 leading-tight">Health Officer</span>
               </button>
 
             </div>
@@ -401,8 +395,7 @@ html_content = f'''<!DOCTYPE html>
       const roles = [
         {{ key: 'Worker', name: 'Health Worker' }},
         {{ key: 'Doctor', name: 'Doctor' }},
-        {{ key: 'Officer', name: 'Health Officer' }},
-        {{ key: 'Family', name: 'Patient / Family' }}
+        {{ key: 'Officer', name: 'Health Officer' }}
       ];
 
       roles.forEach(r => {{

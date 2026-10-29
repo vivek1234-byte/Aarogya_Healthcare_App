@@ -196,9 +196,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                               ),
                                               const SizedBox(width: 6),
                                               Text(
-                                                'Patient',
+                                                'Patient / Family',
                                                 style: TextStyle(
-                                                  fontSize: 13,
+                                                  fontSize: 12,
                                                   fontWeight: FontWeight.w800,
                                                   color: !_isOtherLogin ? Colors.white : Colors.grey.shade600,
                                                 ),
@@ -371,17 +371,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 ),
                                 const SizedBox(height: 12),
 
-                                // 4 Role Selector Options:
-                                // [ Health Worker ] [ Doctor ] [ Health Officer ] [ Patient / Family ]
+                                // 3 Role Selector Options:
+                                // [ Health Worker ] [ Doctor ] [ Health Officer ]
                                 Row(
                                   children: [
                                     _buildOtherRoleItem('Health Worker', Icons.medical_services_rounded),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: 8),
                                     _buildOtherRoleItem('Doctor', Icons.health_and_safety_rounded),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: 8),
                                     _buildOtherRoleItem('Health Officer', Icons.security_rounded),
-                                    const SizedBox(width: 6),
-                                    _buildOtherRoleItem('Patient / Family', Icons.groups_rounded),
                                   ],
                                 ),
 
