@@ -142,6 +142,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAiAssistant();
   setupAddVitalModal();
   setupSearchFilter();
+
+  // Register PWA Service Worker for Mobile App Installation
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  }
 });
 
 // Base URL: Automatically adapts to mobile IP or localhost
