@@ -6,10 +6,7 @@ celery_app = Celery(
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
-        # Phase 2 & 3 tasks will be registered here:
-        # "app.tasks.audio_stt",
-        # "app.tasks.chronic_trends",
-        # "app.tasks.outbreak_detection"
+        "app.tasks.chronic_tasks"
     ]
 )
 
