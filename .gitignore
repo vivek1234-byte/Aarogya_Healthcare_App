@@ -12,8 +12,6 @@ eggs/
 .eggs/
 /lib/
 /lib64/
-!frontend/lib/
-!frontend/lib/**
 parts/
 sdist/
 var/
@@ -45,3 +43,17 @@ storage_data/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Frontend local development (repository tracks only standalone login files)
+frontend/android/
+frontend/lib/
+frontend/login_page/
+frontend/pubspec.yaml
+frontend/web/
+frontend/assets/images/
+frontend/assets/icons/
+
+# Scratch generator scripts
+generate_exact_image_design.py
+generate_perfect_interface.py
+
