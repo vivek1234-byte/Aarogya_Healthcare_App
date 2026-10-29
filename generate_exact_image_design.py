@@ -1,8 +1,8 @@
 import base64
 import os
 
-with open('frontend/web/assets/mobile_hero_bg.jpg', 'rb') as f:
-    hero_bg_b64 = base64.b64encode(f.read()).decode()
+with open('frontend/web/assets/exact_top_hero.jpg', 'rb') as f:
+    exact_top_hero_b64 = base64.b64encode(f.read()).decode()
 
 html_content = f'''<!DOCTYPE html>
 <html lang="en">
@@ -29,18 +29,11 @@ html_content = f'''<!DOCTYPE html>
       100% {{ transform: rotate(360deg); }}
     }}
     .animate-fade-in {{
-      animation: fadeInSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeInSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }}
     .radar-sweep {{
       transform-origin: center center;
       animation: radarSweep 4s linear infinite;
-    }}
-    .hide-scrollbar::-webkit-scrollbar {{
-      display: none;
-    }}
-    .hide-scrollbar {{
-      -ms-overflow-style: none;
-      scrollbar-width: none;
     }}
     .phone-chassis {{
       box-shadow: 0 0 0 10px #1e293b, 0 25px 60px -15px rgba(0,0,0,0.3);
@@ -101,67 +94,23 @@ html_content = f'''<!DOCTYPE html>
   <!-- ============================================================== -->
   <div id="deviceWrapper" class="mx-auto transition-all duration-300 ease-out flex justify-center items-center" style="max-width: 400px;">
     
-    <div id="deviceFrame" class="w-full bg-[#E8F6EF] rounded-[36px] overflow-hidden border border-[#D5E8DE] shadow-[0_25px_60px_-15px_rgba(0,121,83,0.22)] relative phone-chassis">
-
-      <!-- Mobile Simulated Status Bar (9:41, Signal, Battery) -->
-      <div class="bg-transparent text-slate-800 px-6 pt-3 pb-1 flex justify-between items-center text-[12px] font-black tracking-wider select-none">
-        <span>9:41</span>
-        <div class="flex items-center gap-1.5 text-xs">
-          <span>📶</span>
-          <span>📡</span>
-          <span>🔋</span>
-        </div>
-      </div>
+    <div id="deviceFrame" class="w-full bg-[#E5F3EC] rounded-[36px] overflow-hidden border border-[#D5E8DE] shadow-[0_25px_60px_-15px_rgba(0,121,83,0.22)] relative phone-chassis">
 
       <!-- ============================================================ -->
-      <!-- VIEW 1: AUTH LOGIN SCREEN (EXACT MATCH TO UPLOADED IMAGE) -->
+      <!-- VIEW 1: AUTH LOGIN SCREEN (EXACT 100% MATCH TO USER IMAGE) -->
       <!-- ============================================================ -->
       <div id="viewLogin" class="w-full relative">
         
-        <!-- TOP BRANDING & SCENERY HERO -->
-        <div class="px-5 pt-3 pb-2 text-center relative">
-          
-          <!-- Decorative Top-Left Leaves -->
-          <div class="absolute top-1 left-2 text-2xl select-none opacity-80">
-            🌿
-          </div>
-
-          <!-- Logo: Emerald Heart with ECG pulse and leaves -->
-          <div class="flex items-center justify-center gap-2.5 mb-1.5">
-            <div class="relative">
-              <div class="w-12 h-12 rounded-2xl bg-[#1E824C] flex items-center justify-center text-white shadow-md shadow-[#1E824C]/30">
-                <!-- Heart + Pulse line icon -->
-                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                  <path d="M7 11h2l2 4 2-8 2 5h2"/>
-                </svg>
-              </div>
-              <!-- Green Leaves at top of heart -->
-              <span class="absolute -top-2 -right-1.5 text-xs">🍃</span>
-            </div>
-
-            <div class="text-left">
-              <h1 class="text-2xl font-black text-[#135A34] tracking-tight leading-none">ArogyaSaathi</h1>
-              <p class="text-[11px] font-bold text-[#236B46] mt-0.5">Healthcare and Public Health Access</p>
-            </div>
-          </div>
-
-          <!-- Quote Text -->
-          <p class="text-xs font-bold text-[#1D6A42] italic mt-3 px-4 leading-relaxed">
-            “ When healthcare reaches every village,<br/>no one is left behind. ”
-          </p>
-
-          <!-- Rural Scenery Illustration (PHC clinic, ASHA worker with tablet, rural mother and child) -->
-          <div class="mt-3 w-full h-36 rounded-2xl overflow-hidden shadow-sm border border-white/80 bg-slate-100">
-            <img src="data:image/jpeg;base64,{hero_bg_b64}" alt="Village Health Scenery" class="w-full h-full object-cover" />
-          </div>
-
+        <!-- 1. EXACT TOP ILLUSTRATED HERO SECTION -->
+        <!-- Contains Status Bar 9:41, Leaves, Heart Pulse Logo, Title, Subtitle, Quote, and Village Clinic Landscape -->
+        <div class="w-full relative select-none">
+          <img src="data:image/jpeg;base64,{exact_top_hero_b64}" alt="ArogyaSaathi Healthcare Scenery" class="w-full block object-cover" />
         </div>
 
-        <!-- BOTTOM SHEET FLOATING LOGIN CARD -->
-        <div class="bg-white rounded-t-[36px] p-6 shadow-xl border-t border-[#D5E8DE]">
+        <!-- 2. BOTTOM FLOATING WHITE LOGIN CARD (SLIDES UP OVER LOWER ARTWORK) -->
+        <div class="bg-white rounded-t-[36px] -mt-6 sm:-mt-8 relative z-10 px-6 pt-6 pb-6 shadow-xl border-t border-slate-100">
           
-          <!-- Card Header -->
+          <!-- Card Header: Welcome Back -->
           <div class="text-center mb-4">
             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Welcome Back</h2>
             <p class="text-xs text-slate-500 font-semibold mt-0.5">Log in to continue</p>
@@ -538,10 +487,10 @@ html_content = f'''<!DOCTYPE html>
       const frame = document.getElementById('deviceFrame');
       const label = document.getElementById('bezelLabel');
       if (isBezelOn) {{
-        frame.className = 'w-full bg-[#E8F6EF] rounded-[36px] overflow-hidden border border-[#D5E8DE] shadow-[0_25px_60px_-15px_rgba(0,121,83,0.22)] relative phone-chassis';
+        frame.className = 'w-full bg-[#E5F3EC] rounded-[36px] overflow-hidden border border-[#D5E8DE] shadow-[0_25px_60px_-15px_rgba(0,121,83,0.22)] relative phone-chassis';
         label.innerText = 'Bezel: On';
       }} else {{
-        frame.className = 'w-full bg-[#E8F6EF] rounded-3xl overflow-hidden border border-[#D5E8DE] shadow-md relative';
+        frame.className = 'w-full bg-[#E5F3EC] rounded-3xl overflow-hidden border border-[#D5E8DE] shadow-md relative';
         label.innerText = 'Bezel: Off';
       }}
     }}
@@ -598,4 +547,4 @@ with open('frontend/web/index.html', 'w', encoding='utf-8') as f:
 with open('/home/vivek/.gemini/antigravity/brain/d046502c-0133-47f6-9025-b3f5f77d8f92/arogya_interface.html', 'w', encoding='utf-8') as f:
     f.write(html_content)
 
-print('Exact design with conditional Other Login successfully compiled!')
+print('Exact top hero artwork integrated seamlessly!')

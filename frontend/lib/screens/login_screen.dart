@@ -102,123 +102,38 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // ==========================================
-                      // 1. TOP HERO SCENERY & BRANDING SECTION
+                      // 1. EXACT TOP HERO ARTWORK (100% MATCH)
                       // ==========================================
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color(0xFFE4F4EB), Color(0xFFD6EDE0)],
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            // Brand Heart Logo with Leaves
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1E824C),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF1E824C).withOpacity(0.35),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Center(
-                                    child: Icon(Icons.favorite_rounded, color: Colors.white, size: 26),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text(
-                                      'ArogyaSaathi',
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w900,
-                                        color: Color(0xFF155734),
-                                        letterSpacing: -0.5,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Healthcare and Public Health Access',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF2E6F4D),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-
-                            // Quote Text
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                '“ When healthcare reaches every village, no one is left behind. ”',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1E6E45),
-                                  height: 1.35,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-
-                            // Village Landscape with ASHA Worker & Patient Graphic
-                            Container(
-                              height: 140,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white, width: 2),
-                                image: const DecorationImage(
-                                  image: AssetImage('assets/images/mobile_hero_bg.jpg'),
-                                  fit: BoxFit.cover,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 10,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      Image.asset(
+                        'assets/images/exact_top_hero.jpg',
+                        width: double.infinity,
+                        fit: BoxFit.cover,
                       ),
 
                       // ==========================================
                       // 2. BOTTOM FLOATING WHITE LOGIN SHEET
                       // ==========================================
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(32),
-                            topRight: Radius.circular(32),
+                      Transform.translate(
+                        offset: const Offset(0, -22),
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(36),
+                              topRight: Radius.circular(36),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 15,
+                                offset: const Offset(0, -4),
+                              ),
+                            ],
                           ),
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               // Title & Subtitle
@@ -487,6 +402,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             ],
                           ),
                         ),
+                      ),
                       ),
                     ],
                   ),
