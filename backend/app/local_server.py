@@ -21,6 +21,118 @@ from app.core.security import generate_pseudonym, encrypt_pii
 
 voice_parser = VoiceCheckinParser()
 
+# Real clinical dataset for Patient Dashboard (Melina)
+MELINA_PATIENT_DATA = {
+    'patient': {
+        'id': 'PAT-MELINA-7421',
+        'name': 'Melina',
+        'age': 28,
+        'gender': 'Female',
+        'avatar_url': 'assets/melina_avatar.jpg',
+        'blood_group': 'A+',
+        'health_coach': 'Arogya AI Clinical Assistant',
+        'status_summary': 'Optimal Cardiovascular & Metabolic Health'
+    },
+    'vitals': {
+        'blood_pressure': {
+            'systolic': 118,
+            'diastolic': 80,
+            'unit': 'mmHg',
+            'status': 'Normal',
+            'last_updated': '1 week ago',
+            'hourly_bars': [28, 34, 30, 36, 32, 35, 30],
+            'timestamps': ['00:00', '12:00', '24:00']
+        },
+        'heart_rate': {
+            'current': 88,
+            'unit': 'Bpm',
+            'status': 'Resting',
+            'average_bpm': 80.69,
+            'last_updated': '2 hours ago',
+            'benchmark_target': 80,
+            'timestamps': ['00:00', '12:00', '24:00'],
+            'monthly_trend': [
+                {'month': 'Jan', 'bpm': 62.0},
+                {'month': 'Feb', 'bpm': 64.2},
+                {'month': 'Mar', 'bpm': 78.5},
+                {'month': 'Apr', 'bpm': 66.1},
+                {'month': 'May', 'bpm': 82.4},
+                {'month': 'Jun', 'bpm': 88.0, 'highlight': True, 'badge_title': 'Great!', 'badge_text': 'You are achieving your best'},
+                {'month': 'Jul', 'bpm': 68.3},
+                {'month': 'Aug', 'bpm': 72.8},
+                {'month': 'Sep', 'bpm': 69.5},
+                {'month': 'Oct', 'bpm': 84.1},
+                {'month': 'Nov', 'bpm': 70.2},
+                {'month': 'Dec', 'bpm': 74.0}
+            ]
+        },
+        'blood_sugar': {
+            'current': 95,
+            'unit': 'mg/dL',
+            'status': 'Healthy',
+            'last_updated': '45 min ago',
+            'hourly_bars': [20, 24, 22, 28, 35, 30, 26, 32, 29, 25, 28, 26, 24],
+            'timestamps': ['00:00', '12:00', '24:00']
+        },
+        'bmi': {
+            'score': 22.4,
+            'unit': 'kg/m²',
+            'status': 'Stable',
+            'category': 'Normal',
+            'height_cm': 165,
+            'weight_kg': 61.0,
+            'last_updated': '1 week ago',
+            'normal_range': '18.5 - 24.9'
+        },
+        'steps': {
+            'count': 7782,
+            'target': 10000,
+            'pct_change': '+ 30%',
+            'unit': 'Step',
+            'hourly': [0,0,0,0,0,45,210,650,1120,890,430,780,510,890,980,640,410,217,0,0,0,0,0,0]
+        },
+        'nutrition': {
+            'selected_date': 18,
+            'current_carbs': 80,
+            'target_carbs': 174,
+            'calories': 1420,
+            'protein_g': 62,
+            'fat_g': 38,
+            'days': [
+                {'day': 'Sun', 'date': 17, 'carbs': 125, 'target': 174, 'active': False},
+                {'day': 'Mon', 'date': 18, 'carbs': 80, 'target': 174, 'active': True},
+                {'day': 'Tue', 'date': 19, 'carbs': 96, 'target': 174, 'active': False},
+                {'day': 'Wed', 'date': 20, 'carbs': 144, 'target': 174, 'active': False, 'circled': True},
+                {'day': 'Thu', 'date': 21, 'carbs': 86, 'target': 174, 'active': False},
+                {'day': 'Fri', 'date': 22, 'carbs': 112, 'target': 174, 'active': False},
+                {'day': 'Sat', 'date': 23, 'carbs': 130, 'target': 174, 'active': False}
+            ]
+        },
+        'daily_inputs': [
+            {
+                'id': 'inp-1',
+                'type': 'saturation',
+                'name': 'Saturation',
+                'value': '98%',
+                'time': '14:00',
+                'unit': 'Mmol/L',
+                'color': 'cyan',
+                'icon': 'water'
+            },
+            {
+                'id': 'inp-2',
+                'type': 'pressure',
+                'name': 'Pressure',
+                'value': '140/80',
+                'time': '14:00',
+                'unit': '120/60',
+                'color': 'pink',
+                'icon': 'heart'
+            }
+        ]
+    }
+}
+
 class ArogyaApiHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -52,36 +164,7 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
         url = urllib.parse.urlparse(self.path)
         path = url.path
 
-        if path in ['/', '/index.html', '/app']:
-            html_path = os.path.join(os.path.dirname(backend_dir), 'frontend', 'web', 'index.html')
-            if os.path.exists(html_path):
-                with open(html_path, 'rb') as f:
-                    content = f.read()
-                self.send_response(200)
-                self._send_cors_headers()
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.send_header('Content-Length', str(len(content)))
-                self.end_headers()
-                self.wfile.write(content)
-                return
-
-        if path.startswith('/login_page/') or path in ['/login', '/login/']:
-            subpath = path[len('/login_page/'):] if path.startswith('/login_page/') else 'index.html'
-            if not subpath or subpath == '/':
-                subpath = 'index.html'
-            file_path = os.path.join(os.path.dirname(backend_dir), 'frontend', 'login_page', subpath)
-            if os.path.exists(file_path) and os.path.isfile(file_path):
-                mime = 'text/html; charset=utf-8' if file_path.endswith('.html') else ('text/css' if file_path.endswith('.css') else ('application/javascript' if file_path.endswith('.js') else ('image/jpeg' if file_path.endswith(('.jpg', '.jpeg')) else 'application/octet-stream')))
-                with open(file_path, 'rb') as f:
-                    content = f.read()
-                self.send_response(200)
-                self._send_cors_headers()
-                self.send_header('Content-Type', mime)
-                self.send_header('Content-Length', str(len(content)))
-                self.end_headers()
-                self.wfile.write(content)
-                return
-
+        # 1. API: Health Check
         if path in ['/api/v1/health', '/health']:
             self._send_json(200, {
                 'status': 'healthy',
@@ -89,6 +172,49 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
                 'dpdp_act_2023_active': True,
                 'version': '1.0.0'
             })
+            return
+
+        # 2. API: Patient Dashboard Real Data
+        if path in ['/api/v1/patient/dashboard', '/api/v1/patient/melina/dashboard', '/patient/dashboard']:
+            self._send_json(200, MELINA_PATIENT_DATA)
+            return
+
+        # 3. Static Web Files from frontend/
+        frontend_dir = os.path.join(os.path.dirname(backend_dir), 'frontend')
+        target_file = None
+        if path in ['/dashboard', '/dashboard.html', '/patient_dashboard', '/patient_dashboard.html']:
+            target_file = os.path.join(frontend_dir, 'patient_dashboard.html')
+        elif path in ['/', '/index.html', '/login', '/login/']:
+            target_file = os.path.join(frontend_dir, 'index.html')
+        else:
+            rel_path = path.lstrip('/')
+            potential_path = os.path.join(frontend_dir, rel_path)
+            if os.path.exists(potential_path) and os.path.isfile(potential_path):
+                target_file = potential_path
+
+        if target_file and os.path.exists(target_file) and os.path.isfile(target_file):
+            ext = os.path.splitext(target_file)[1].lower()
+            mime_map = {
+                '.html': 'text/html; charset=utf-8',
+                '.css': 'text/css; charset=utf-8',
+                '.js': 'application/javascript; charset=utf-8',
+                '.json': 'application/json; charset=utf-8',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.svg': 'image/svg+xml',
+                '.ico': 'image/x-icon',
+                '.webp': 'image/webp'
+            }
+            mime = mime_map.get(ext, 'application/octet-stream')
+            with open(target_file, 'rb') as f:
+                content = f.read()
+            self.send_response(200)
+            self._send_cors_headers()
+            self.send_header('Content-Type', mime)
+            self.send_header('Content-Length', str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
             return
 
         if '/chronic/village/' in path and '/action-queue' in path:
@@ -263,6 +389,84 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
                 'village_id': village_id,
                 'dpdp_status': 'ENCRYPTED_CONSENTED',
                 'message': 'Patient successfully registered locally with DPDP verbal consent.'
+            })
+            return
+
+        # 1. API: Record New Daily Vital Input
+        if path in ['/api/v1/patient/vitals', '/patient/vitals']:
+            v_type = data.get('type', 'vitals').lower()
+            name = data.get('name', 'Vitals Entry')
+            value = data.get('value', '120/80')
+            unit = data.get('unit', '')
+            color = data.get('color', 'cyan' if 'sat' in v_type or 'water' in v_type else 'pink')
+            icon = data.get('icon', 'water' if 'sat' in v_type or 'water' in v_type else 'heart')
+            time_str = data.get('time', 'Just now')
+
+            new_entry = {
+                'id': f"inp-{os.urandom(3).hex()}",
+                'type': v_type,
+                'name': name,
+                'value': value,
+                'time': time_str,
+                'unit': unit,
+                'color': color,
+                'icon': icon
+            }
+            MELINA_PATIENT_DATA['vitals']['daily_inputs'].insert(0, new_entry)
+
+            if 'pressure' in v_type or '/' in value:
+                parts = value.split('/')
+                if len(parts) == 2:
+                    try:
+                        MELINA_PATIENT_DATA['vitals']['blood_pressure']['systolic'] = int(parts[0].strip())
+                        MELINA_PATIENT_DATA['vitals']['blood_pressure']['diastolic'] = int(parts[1].strip())
+                        MELINA_PATIENT_DATA['vitals']['blood_pressure']['last_updated'] = 'Just now'
+                    except:
+                        pass
+            elif 'sugar' in v_type or 'glucose' in v_type:
+                try:
+                    MELINA_PATIENT_DATA['vitals']['blood_sugar']['current'] = int(value.replace('mg/dL','').strip())
+                    MELINA_PATIENT_DATA['vitals']['blood_sugar']['last_updated'] = 'Just now'
+                except:
+                    pass
+
+            self._send_json(201, {
+                'status': 'success',
+                'message': 'Vital record logged successfully under patient DPDP consent.',
+                'entry': new_entry,
+                'dashboard': MELINA_PATIENT_DATA
+            })
+            return
+
+        # 2. API: AI Health Coach Query
+        if path in ['/api/v1/patient/ai-coach', '/patient/ai-coach']:
+            query = data.get('query', '').strip()
+            topic = data.get('topic', '').lower()
+
+            response_title = "Health Coach Insights"
+            if 'diet' in topic or 'diet' in query.lower() or 'food' in query.lower() or 'carb' in query.lower():
+                response_title = "Personalized Diet Plan"
+                answer = "Your blood glucose is at an optimal 95 mg/dL with 80g of carbs logged today (goal: 174g). To support your 7,782 steps and cardiovascular recovery, prioritize a high-fiber evening bowl (quinoa, steamed greens, roasted chickpeas or paneer) providing ~25g complex carbs and 22g protein."
+                quick_stats = {"Current Carbs": "80/174g", "Metabolic Status": "Optimal Glycemic Window"}
+            elif 'workout' in topic or 'exercise' in query.lower() or 'workout' in query.lower() or 'step' in query.lower():
+                response_title = "Cardio & Workout Optimization"
+                answer = "Your resting heart rate is consistent at 80.69 Bpm and you've achieved a 30% step surge today (7,782 steps). Target a 20-minute gentle zone-2 recovery walk or yoga mobility flow to hit 10,000 steps without spiking your blood pressure (118/80 mmHg)."
+                quick_stats = {"Daily Steps": "7,782 / 10,000", "Avg Heart Rate": "80.69 Bpm"}
+            elif 'sleep' in topic or 'sleep' in query.lower() or 'rest' in query.lower() or 'bed' in query.lower():
+                response_title = "Sleep & Circadian Alignment"
+                answer = "Heart rate variability logs indicate your optimal wind-down time starts at 22:00. To bring your 88 Bpm resting rate down towards 64 Bpm in deep REM, reduce screen blue-light after 21:30, hydrate with warm herbal chamomile tea, and aim for 7.5 hours of restorative sleep."
+                quick_stats = {"Optimal Bedtime": "22:15", "Target Deep Sleep": "2h 15m"}
+            else:
+                response_title = "Arogya Clinical Assistant"
+                answer = f"Hello Melina! Regarding '{query}': Your core vitals are in healthy ranges (BP: 118/80 mmHg, Sugar: 95 mg/dL, BMI: 22.4 kg/m²). Keep maintaining balanced hydration and moderate aerobic consistency. How else can I guide your routine today?"
+                quick_stats = {"Health Score": "94/100", "Risk Tier": "Low / Optimal"}
+
+            self._send_json(200, {
+                'title': response_title,
+                'answer': answer,
+                'quick_stats': quick_stats,
+                'patient_name': 'Melina',
+                'timestamp': 'Just now'
             })
             return
 

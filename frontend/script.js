@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (currentLoginType === 'patient') {
-      alert(`🎉 Logged In as Patient / Family\n• Identifier: ${mobileOrId}\n• Welcome to ArogyaSaathi!`);
+      window.location.href = 'patient_dashboard.html';
     } else {
       alert(`🎉 Logged In as ${selectedOtherRole}\n• Identifier: ${mobileOrId}\n• Session Authenticated under DPDP Act 2023`);
     }
