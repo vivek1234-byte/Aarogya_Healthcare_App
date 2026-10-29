@@ -6,7 +6,8 @@ celery_app = Celery(
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
-        "app.tasks.chronic_tasks"
+        "app.tasks.chronic_tasks",
+        "app.tasks.surveillance_tasks"
     ]
 )
 

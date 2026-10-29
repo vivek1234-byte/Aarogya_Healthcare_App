@@ -16,83 +16,81 @@ Flutter Mobile App (ASHA / ANM)
 FastAPI Gateway & Auth (Port 8000)
         │
         ├──▶ Deterministic Safety Gate (100% Red-Flag Escalation)
+        ├──▶ Multilingual STT & Clinical Symptom Extractor (Indic + English)
+        ├──▶ LangGraph Multi-Turn Clinical Triage Orchestrator (Chest Pain, Child Danger Signs, Fever)
+        ├──▶ Doctor Referral Summary Generator (<= 30s target)
+        ├──▶ Chronic Care & Deterioration Early Warning Engine (BP & Glucose)
+        ├──▶ Syndromic Surveillance & Spatio-Temporal Outbreak Early Warning (PostGIS + TimescaleDB)
         ├──▶ AES-256 PII Encryption & Pseudonymization Engine
-        ├──▶ TimescaleDB Hypertables (Vitals Series & Surveillance Streams)
-        ├──▶ PostGIS Geometries (Village Clusters & Outbreak Alert Polygons)
-        ├──▶ pgvector IVFFlat (Clinical Protocol Guidelines RAG)
         └──▶ Tamper-Evident SHA-256 Chained Audit Ledger
 ```
 
 ---
 
-## 📦 What Was Built in Phase 1
+## 📦 Project Implementation Progress
 
-### 1. Database Architecture (`backend/scripts/init_db.sql`)
-Initializes PostgreSQL with all required extensions and creates all **14 core tables** specified in `DEV_107.pdf`:
-1. `users`: ASHA, ANM, Doctor, Officer, Admin with bcrypt passwords & role-based access.
-2. `patients`: Encrypted PII at rest + deterministic SHA-256 HMAC pseudonym ID.
-3. `consents`: Voice, written, and missed-call consent records with audio URLs.
-4. `encounters`: Triage and chronic follow-up sessions.
-5. `symptoms`: Extracted symptoms, duration, and red-flag indicators.
-6. `vitals_series`: **TimescaleDB Hypertable** partitioned by `recorded_at` for continuous BP, glucose, SpO2 tracking.
-7. `medication_adherence`: Taken/missed dose logs for chronic hypertension & diabetes patients.
-8. `red_flag_rules`: Deterministic safety rules that strictly override LLMs.
-9. `protocol_chunks`: **pgvector** table with 1536-dim vector embeddings for standard IMNCI/ICMR guidelines.
-10. `triage_decisions`: Decisions with protocol citations and uncertainty flags.
-11. `referrals`: One-page structured summaries for PHC doctors.
-12. `escalations`: Real-time emergency escalation queue.
-13. `surveillance_signals`: **TimescaleDB Hypertable** aggregating clinic fever cases, pharmacy ORS sales, and school absenteeism.
-14. `outbreak_alerts`: **PostGIS Geometry** cluster polygons with spatio-temporal $Z$-scores.
-15. `audit_log`: Append-only, cryptographically chained SHA-256 tamper-evident ledger.
+### Phase 1: Database Foundation & Security Architecture
+* **14 Core Tables**: Initialized PostgreSQL with `postgis`, `timescaledb`, and `vector` extensions.
+* **DPDP Compliance**: AES-256 encryption for PII, deterministic HMAC-SHA256 pseudonym IDs, and Right-to-Erasure.
+* **Deterministic Safety Gate**: 100% danger-sign escalation (Objective O1) and zero-prescription policy.
+* **TimescaleDB Hypertables**: `vitals_series` and `surveillance_signals` partitioned by timestamp.
+* **Audit Ledger**: Cryptographically chained SHA-256 tamper-evident log.
 
-### 2. Security & DPDP Compliance (`backend/app/core/security.py`)
-- **AES-256 PII Encryption**: Name, phone, ABHA ID, and address are encrypted before writing to disk.
-- **HMAC Pseudonymization**: Deterministic pseudonym hash for de-identified epidemiological analytics without leaking PII.
-- **Right to Erasure**: `DELETE /api/v1/patients/{id}` executes DPDP-compliant data erasure and logs an immutable audit trail.
-- **Audit Hash Chaining**: Every log entry computes `entry_hash = SHA256(previous_hash + entry_data)`, preventing silent database tampering.
+### Phase 2: Voice Triage Pipeline & Doctor Referral Generator
+* **Storage Service**: Audio and markdown document storage via MinIO/S3 (`arogya-audio-records`, `arogya-referral-docs`).
+* **Multilingual STT Pipeline**: Bhashini Indian Language Gateway adapter with fallback transcription.
+* **Clause-Aware Symptom Extractor**: Extracts standardized clinical symptom codes with negation awareness (e.g. *"गर्दन में अकड़न नहीं है"* $\to$ neck stiffness negated).
+* **LangGraph Clinical Triage Orchestrator**: Multi-turn stateful graph handling:
+  1. Acute Chest Pain (Coronary red flags $\to$ `EMERGENCY`)
+  2. Child Danger Signs (IMNCI under-5: convulsions, inability to drink $\to$ `EMERGENCY`)
+  3. Fever (Acute uncomplicated $\to$ `TREAT_LOCALLY`; Prolonged $\ge 3$ days $\to$ `REFER`)
+* **Doctor Referral Summary Generator**: Generates structured 1-page clinical reports in $< 0.1\text{ s}$ (Objective O6 $\le 30\text{ s}$ target) with zero unauthorized prescriptions.
 
-### 3. Deterministic Safety Gate (`backend/app/services/safety_gate.py`)
-- **100% Danger-Sign Escalation (Objective O1)**:
-  - Chest pain + sweating/radiating pain $\to$ Immediate `EMERGENCY`
-  - Child under 5 with convulsions / inability to feed $\to$ Immediate `EMERGENCY`
-  - Fever with stiff neck / altered mental status $\to$ Immediate `EMERGENCY`
-  - Severe respiratory distress / SpO2 < 90% $\to$ Immediate `EMERGENCY`
-- **Zero-Prescription Guarantee**: Sanitizer strips and blocks any medication names or dosages.
+### Phase 3: Chronic Care Engine & Early Deterioration Detection
+* **Clinical Trend Analytics**: Moving averages, systolic velocity/slope ($\Delta \text{mmHg/week}$), sustained Stage 2 Hypertension, and Hypoglycemia/Hyperglycemia detection.
+* **Medication Adherence Scoring**: Tracks compliance and flags critical dropouts ($\ge 3$ consecutive missed doses).
+* **Conversational Voice Check-in Parser**: Spoken reporting of BP, sugar, and pill adherence in Hindi and English with localized voice feedback.
+* **Synthea-Style Simulated Cohort Benchmark (Objective O2)**: Injected progressive deterioration into 50 chronic patients $\to$ **100% compliance** with an average lead time of **12.0 days** before scheduled clinical visit ($\ge 7$ days target).
+* **ASHA Village Action Roster**: Prioritized daily action queue for frontline workers (Priority 1: Critical $\to$ Priority 4: Routine).
 
-### 4. API Endpoints (`backend/app/api/v1/endpoints/`)
-- `POST /api/v1/auth/login` & `POST /api/v1/auth/register`: JWT authentication with role and village scope.
-- `GET /api/v1/health`: Deep health probe checking database connectivity and extensions.
-- `POST /api/v1/patients/`: Registers patient with encrypted PII and voice consent.
-- `GET /api/v1/patients/`: Scoped patient listing by assigned village.
-- `DELETE /api/v1/patients/{id}`: DPDP Right to Erasure.
-- `POST /api/v1/vitals/`: Ingests vital observations into TimescaleDB.
-- `GET /api/v1/vitals/{patient_id}/trends`: Chronic deterioration analysis (flagging deteriorating BP/glucose trends $\ge 7$ days early).
-- `POST /api/v1/triage/evaluate`: Deterministic safety gate evaluation.
-- `GET /api/v1/audit/`: Audit trail inspection.
-- `GET /api/v1/audit/verify-chain`: Mathematically validates the cryptographic integrity of the entire ledger.
+### Phase 4: Syndromic Surveillance & Village Outbreak Early Warning
+* **Multi-Source Signal Fusion**: Combines clinic triage encounters, village pharmacy OTC ORS sales, and primary school absenteeism.
+* **Anomaly Detection Algorithm**: Rolling baseline mean/standard deviation with multi-stream fused $Z$-score and confidence mapping.
+* **PostGIS Geospatial Clustering**: Computes convex hull bounding polygons for affected village clusters.
+* **Live GeoJSON Map Feed**: Village boundaries color-coded by risk level (`NORMAL`, `WATCH`, `WARNING`, `OUTBREAK`) for Flutter Map widgets.
+* **Simulated Outbreak Injection Benchmark (Objective O4)**:
+  * Injected waterborne outbreak in rural block: Detected at **Day 25** vs. conventional clinic baseline at **Day 28** (**3 days earlier**).
+  * Pre-outbreak false alarm rate: **0 false alarms / month / block** ($\le 1$ target).
 
 ---
 
-## 🚀 How to Run
+## 🧪 Verification Test Suites
 
-### Option A: Using Docker (Recommended for complete stack)
+Run any verification suite natively using Python:
+
+```bash
+# Phase 2: Voice Triage, LangGraph & Doctor Summaries
+python3 backend/tests/verify_phase2.py
+
+# Phase 3: Chronic Care, Adherence & Objective O2 Benchmark
+python3 backend/tests/verify_phase3.py
+
+# Phase 4: Syndromic Surveillance, GeoJSON Map & Objective O4 Benchmark
+python3 backend/tests/verify_phase4.py
+
+# Run all verification suites in sequence:
+python3 backend/tests/verify_phase2.py && python3 backend/tests/verify_phase3.py && python3 backend/tests/verify_phase4.py
+```
+
+---
+
+## 🚀 Running the Services with Docker
+
 ```bash
 cd backend
 docker compose up --build -d
 ```
-FastAPI Swagger documentation will be available at:
-`http://localhost:8000/docs`
-
-### Option B: Local Python Development
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-./run_backend.sh
-```
-
-### Running the Phase 1 Verification Suite:
-```bash
-python3 backend/tests/verify_phase1.py
-```
+* **Interactive OpenAPI Swagger Docs**: `http://localhost:8000/docs`
+* **MinIO Object Storage Console**: `http://localhost:9001`
+* **PostgreSQL (PostGIS + TimescaleDB + pgvector)**: Port `5432`
+* **Redis**: Port `6379`
