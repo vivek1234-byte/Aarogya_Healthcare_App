@@ -144,10 +144,13 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSearchFilter();
 });
 
+// Base URL: Automatically adapts to mobile IP or localhost
+const API_BASE = window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8080';
+
 // ================= 3. BACKEND API SYNC =================
 async function fetchBackendData() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/v1/patient/dashboard", {
+    const res = await fetch(`${API_BASE}/api/v1/patient/dashboard`, {
       method: "GET",
       headers: { "Content-Type": "application/json" }
     });
@@ -450,7 +453,7 @@ async function handleAiQuery(topic, query) {
   statsEl.innerHTML = "";
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/v1/patient/ai-coach", {
+    const res = await fetch(`${API_BASE}/api/v1/patient/ai-coach`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ topic, query })
@@ -632,7 +635,7 @@ function setupAddVitalModal() {
 
     // Sync to backend via POST
     try {
-      await fetch("http://127.0.0.1:8000/api/v1/patient/vitals", {
+      await fetch(`${API_BASE}/api/v1/patient/vitals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

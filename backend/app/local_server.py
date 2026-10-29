@@ -476,12 +476,12 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
         # Quiet standard logging
         pass
 
-def run(port=8000):
+def run(port=8080):
     server_address = ('0.0.0.0', port)
     httpd = HTTPServer(server_address, ArogyaApiHandler)
-    print(f"🏥 ArogyaSaathi Local Backend API running on http://127.0.0.1:{port}")
+    print(f"🏥 ArogyaSaathi Local Backend API running on http://0.0.0.0:{port}")
     httpd.serve_forever()
 
 if __name__ == '__main__':
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
     run(port)
