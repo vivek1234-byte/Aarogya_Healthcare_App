@@ -65,6 +65,23 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
                 self.wfile.write(content)
                 return
 
+        if path.startswith('/login_page/') or path in ['/login', '/login/']:
+            subpath = path[len('/login_page/'):] if path.startswith('/login_page/') else 'index.html'
+            if not subpath or subpath == '/':
+                subpath = 'index.html'
+            file_path = os.path.join(os.path.dirname(backend_dir), 'frontend', 'login_page', subpath)
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                mime = 'text/html; charset=utf-8' if file_path.endswith('.html') else ('text/css' if file_path.endswith('.css') else ('application/javascript' if file_path.endswith('.js') else ('image/jpeg' if file_path.endswith(('.jpg', '.jpeg')) else 'application/octet-stream')))
+                with open(file_path, 'rb') as f:
+                    content = f.read()
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', mime)
+                self.send_header('Content-Length', str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+                return
+
         if path in ['/api/v1/health', '/health']:
             self._send_json(200, {
                 'status': 'healthy',

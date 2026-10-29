@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArogyaSaathi - Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Mobile Device Frame Container -->
+  <div class="device-container">
+    
+    <!-- 1. Seamless Top Hero Artwork -->
+    <!-- Displays Status Bar, Leaves, Heart Pulse Logo, Title, Subtitle, Quote, and Village Scenery -->
+    <div class="hero-artwork">
+      <img src="assets/exact_top_hero.jpg" alt="ArogyaSaathi Healthcare Scenery">
+    </div>
+
+    <!-- 2. Bottom Floating White Login Card -->
+    <div class="login-card">
+      
+      <!-- Welcome Header -->
+      <div class="login-header">
+        <h2>Welcome Back</h2>
+        <p>Log in to continue</p>
+      </div>
+
+      <!-- Upper Toggle Pills: [ 👤 Patient / Family ]  [ 🧑‍⚕️ Other Login ] -->
+      <div class="toggle-pills">
+        <button type="button" id="pillPatient" class="pill-btn active">
+          <span class="pill-icon">👤</span>
+          <span>Patient / Family</span>
+        </button>
+        <button type="button" id="pillOther" class="pill-btn">
+          <span class="pill-icon">🧑‍⚕️</span>
+          <span>Other Login</span>
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="login-form">
+        
+        <!-- Mobile Number / Worker ID Input -->
+        <div class="input-group">
+          <span class="input-icon">📞</span>
+          <input 
+            type="text" 
+            id="inputMobile" 
+            class="input-field" 
+            value="9876543210" 
+            placeholder="Mobile Number" 
+            required
+          >
+        </div>
+
+        <!-- Password Input -->
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input 
+            type="password" 
+            id="inputPassword" 
+            class="input-field" 
+            value="1234" 
+            placeholder="Password" 
+            required
+          >
+          <button type="button" id="toggleEye" class="toggle-eye" aria-label="Toggle password visibility">
+            👁️‍🗨️
+          </button>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-submit">
+          <span>Log In</span>
+          <span>➔</span>
+        </button>
+
+      </form>
+
+      <!-- 3. Conditional "OR Login as" Role Selector Section -->
+      <!-- Only visible when "Other Login" is clicked; hidden for "Patient / Family" -->
+      <div id="otherLoginSection" class="other-login-section hidden">
+        
+        <!-- Divider -->
+        <div class="divider">
+          <span>OR</span>
+        </div>
+        <p class="login-as-subtitle">Login as</p>
+
+        <!-- 3 Role Options: Health Worker, Doctor, Health Officer -->
+        <div class="roles-grid">
+          
+          <!-- Health Worker (Default Selected in Other Login) -->
+          <button 
+            type="button" 
+            class="role-btn active" 
+            data-role="Health Worker" 
+            data-id="ASHA-RAMPUR-7821"
+          >
+            <span class="role-icon">👩‍⚕️</span>
+            <span class="role-label">Health Worker</span>
+          </button>
+
+          <!-- Doctor -->
+          <button 
+            type="button" 
+            class="role-btn" 
+            data-role="Doctor" 
+            data-id="DR-VERMA-PHC-402"
+          >
+            <span class="role-icon">🩺</span>
+            <span class="role-label">Doctor</span>
+          </button>
+
+          <!-- Health Officer -->
+          <button 
+            type="button" 
+            class="role-btn" 
+            data-role="Health Officer" 
+            data-id="OFFICER-DIST-881"
+          >
+            <span class="role-icon">👮</span>
+            <span class="role-label">Health Officer</span>
+          </button>
+
+        </div>
+
+        <!-- Bottom Leaf Accent -->
+        <div class="leaf-accent">
+          <span class="leaf-icon">🍃</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

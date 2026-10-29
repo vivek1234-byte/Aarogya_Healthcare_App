@@ -1,0 +1,326 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --primary-green: #1E824C;
+  --primary-green-hover: #186A3E;
+  --primary-green-light: #E8F7F0;
+  --body-bg: #DFEDE6;
+  --card-bg: #FFFFFF;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --border-color: #E2E8F0;
+  --input-bg: #F8FAFC;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--body-bg);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* Device Wrapper Frame */
+.device-container {
+  width: 100%;
+  max-width: 400px;
+  background-color: #E5F3EC;
+  border-radius: 36px;
+  overflow: hidden;
+  border: 1px solid #D5E8DE;
+  box-shadow: 0 0 0 10px #1E293B, 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+/* Top Hero Artwork Section */
+.hero-artwork {
+  width: 100%;
+  position: relative;
+  user-select: none;
+}
+
+.hero-artwork img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Floating White Bottom Card */
+.login-card {
+  background-color: var(--card-bg);
+  border-radius: 36px 36px 0 0;
+  margin-top: -24px;
+  position: relative;
+  z-index: 10;
+  padding: 24px 24px 28px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* Header Text */
+.login-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.login-header h2 {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.login-header p {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* Toggle Pills Container */
+.toggle-pills {
+  display: flex;
+  background-color: #F1F5F9;
+  border-radius: 20px;
+  padding: 4px;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.pill-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  background-color: transparent;
+  color: var(--text-muted);
+}
+
+.pill-btn.active {
+  background-color: var(--primary-green);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(30, 130, 76, 0.25);
+}
+
+.pill-icon {
+  font-size: 14px;
+}
+
+/* Form Styling */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 15px;
+  color: #94A3B8;
+  pointer-events: none;
+}
+
+.input-field {
+  width: 100%;
+  padding: 13px 40px 13px 42px;
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-field::placeholder {
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.input-field:focus {
+  background-color: #FFFFFF;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(30, 130, 76, 0.15);
+}
+
+.toggle-eye {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #94A3B8;
+  cursor: pointer;
+}
+
+/* Log In Submit Button */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--primary-green);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 6px 16px rgba(30, 130, 76, 0.28);
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.btn-submit:hover {
+  background-color: var(--primary-green-hover);
+}
+
+.btn-submit:active {
+  transform: scale(0.99);
+}
+
+/* Conditional Other Login Section */
+.other-login-section {
+  margin-top: 20px;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.divider span {
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #94A3B8;
+  letter-spacing: 0.5px;
+}
+
+.login-as-subtitle {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* 3 Role Selection Cards Row */
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.role-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 6px;
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  background-color: #F0F7F3;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.role-btn:hover {
+  background-color: var(--primary-green-light);
+}
+
+.role-btn.active {
+  background-color: var(--primary-green-light);
+  border: 2px solid var(--primary-green);
+  box-shadow: 0 2px 8px rgba(30, 130, 76, 0.15);
+}
+
+.role-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.role-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.role-btn.active .role-label {
+  color: var(--primary-green);
+  font-weight: 900;
+}
+
+/* Bottom Leaf Accent */
+.leaf-accent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.leaf-accent::before,
+.leaf-accent::after {
+  content: '';
+  width: 30px;
+  border-bottom: 1px solid #CBD5E1;
+}
+
+.leaf-icon {
+  font-size: 13px;
+  color: #64748B;
+}
+
+/* Helper Class */
+.hidden {
+  display: none !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
