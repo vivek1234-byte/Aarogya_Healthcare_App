@@ -34,6 +34,7 @@ venv/
 pgdata/
 redis_data/
 minio_data/
+storage_data/
 
 # IDE & OS
 .idea/
