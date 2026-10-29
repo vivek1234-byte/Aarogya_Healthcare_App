@@ -11,36 +11,54 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController(text: 'ASHA-RAMPUR-7821');
+  final _mobileController = TextEditingController(text: '9876543210');
   final _passwordController = TextEditingController(text: '1234');
   
+  bool _isOtherLogin = false; // When true: shows "OR Login as" role options; when false: hidden
+  String _selectedOtherRole = 'Health Worker'; // 'Health Worker', 'Doctor', 'Health Officer', 'Patient / Family'
   bool _obscurePassword = true;
-  bool _rememberMe = true;
   bool _isLoading = false;
-  String _selectedRole = 'ASHA / ANM'; // 'ASHA / ANM', 'Doctor', 'Health Officer'
-  String _selectedLanguage = 'English';
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _mobileController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _onRoleSelected(String role, String defaultUser) {
+  void _onToggleLoginType(bool isOther) {
     setState(() {
-      _selectedRole = role;
-      _usernameController.text = defaultUser;
+      _isOtherLogin = isOther;
+      if (!isOther) {
+        _mobileController.text = '9876543210';
+      } else {
+        _onSelectOtherRole(_selectedOtherRole);
+      }
     });
   }
 
-  Future<void> _handleSignIn() async {
+  void _onSelectOtherRole(String role) {
+    setState(() {
+      _selectedOtherRole = role;
+      if (role == 'Health Worker') {
+        _mobileController.text = 'ASHA-RAMPUR-7821';
+      } else if (role == 'Doctor') {
+        _mobileController.text = 'DR-VERMA-PHC-402';
+      } else if (role == 'Health Officer') {
+        _mobileController.text = 'OFFICER-DIST-881';
+      } else {
+        _mobileController.text = 'PATIENT-FAM-552';
+      }
+    });
+  }
+
+  Future<void> _handleLogIn() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 700));
+    await Future.delayed(const Duration(milliseconds: 600));
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -56,476 +74,466 @@ class _LoginScreenState extends State<LoginScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
     final size = MediaQuery.of(context).size;
-    final isDesktopOrTablet = size.width >= 800;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFEAF3EE),
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFE4F1E9),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            physics: const BouncingScrollPhysics(),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1040),
+              constraints: const BoxConstraints(maxWidth: 440),
               child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFD5E8DE),
-                    width: 1.2,
-                  ),
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF2F9F4),
+                  borderRadius: BorderRadius.circular(36),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF007953).withOpacity(isDark ? 0.2 : 0.12),
-                      blurRadius: 40,
+                      color: const Color(0xFF1E824C).withOpacity(0.18),
+                      blurRadius: 35,
                       offset: const Offset(0, 15),
                     ),
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(32),
-                  child: isDesktopOrTablet
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Left Hero Panel (60%)
-                            Expanded(flex: 7, child: _buildHeroPanel(isDark)),
-                            // Right Login Card (40%)
-                            Expanded(flex: 5, child: _buildLoginForm(isDark)),
-                          ],
-                        )
-                      : Column(
-                          children: [
-                            _buildHeroPanel(isDark, isMobile: true),
-                            _buildLoginForm(isDark),
-                          ],
-                        ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Left Hero Side (Matching user's reference)
-  Widget _buildHeroPanel(bool isDark, {bool isMobile = false}) {
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 24 : 40),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF0F261D), const Color(0xFF061B14)]
-              : [const Color(0xFFF4FAF6), const Color(0xFFDDF1E7)],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Logo & Tagline
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF00895D), Color(0xFF005B3E)],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF00895D).withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.favorite_rounded, color: Colors.white, size: 28),
-                  ),
-                  const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  borderRadius: BorderRadius.circular(36),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'ArogyaSaathi',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          color: isDark ? Colors.white : const Color(0xFF0B4734),
-                          letterSpacing: -0.5,
+                      // ==========================================
+                      // 1. TOP HERO SCENERY & BRANDING SECTION
+                      // ==========================================
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Color(0xFFE4F4EB), Color(0xFFD6EDE0)],
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            // Brand Heart Logo with Leaves
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E824C),
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF1E824C).withOpacity(0.35),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Icon(Icons.favorite_rounded, color: Colors.white, size: 26),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'ArogyaSaathi',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF155734),
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Healthcare and Public Health Access',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF2E6F4D),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Quote Text
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                '“ When healthcare reaches every village, no one is left behind. ”',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E6E45),
+                                  height: 1.35,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Village Landscape with ASHA Worker & Patient Graphic
+                            Container(
+                              height: 140,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white, width: 2),
+                                image: const DecorationImage(
+                                  image: AssetImage('assets/images/mobile_hero_bg.jpg'),
+                                  fit: BoxFit.cover,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 10,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        'Healthy Villages • Stronger Communities',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF52796F),
+
+                      // ==========================================
+                      // 2. BOTTOM FLOATING WHITE LOGIN SHEET
+                      // ==========================================
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(32),
+                            topRight: Radius.circular(32),
+                          ),
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Title & Subtitle
+                              Text(
+                                'Welcome Back',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: isDark ? Colors.white : const Color(0xFF111827),
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Log in to continue',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7280),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Two Top Toggle Pills: [ 👤 Patient ]  [ 🧑‍⚕️ Other Login ]
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Patient Tab
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () => _onToggleLoginType(false),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          decoration: BoxDecoration(
+                                            color: !_isOtherLogin ? const Color(0xFF1E824C) : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(20),
+                                            boxShadow: !_isOtherLogin
+                                                ? [
+                                                    BoxShadow(
+                                                      color: const Color(0xFF1E824C).withOpacity(0.35),
+                                                      blurRadius: 8,
+                                                      offset: const Offset(0, 2),
+                                                    ),
+                                                  ]
+                                                : [],
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.person_rounded,
+                                                size: 16,
+                                                color: !_isOtherLogin ? Colors.white : Colors.grey.shade600,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                'Patient',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: !_isOtherLogin ? Colors.white : Colors.grey.shade600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    // Other Login Tab
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () => _onToggleLoginType(true),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          decoration: BoxDecoration(
+                                            color: _isOtherLogin ? const Color(0xFF1E824C) : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(20),
+                                            boxShadow: _isOtherLogin
+                                                ? [
+                                                    BoxShadow(
+                                                      color: const Color(0xFF1E824C).withOpacity(0.35),
+                                                      blurRadius: 8,
+                                                      offset: const Offset(0, 2),
+                                                    ),
+                                                  ]
+                                                : [],
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.medical_services_outlined,
+                                                size: 16,
+                                                color: _isOtherLogin ? Colors.white : Colors.grey.shade600,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                'Other Login',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: _isOtherLogin ? Colors.white : Colors.grey.shade600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Mobile Number Input
+                              TextFormField(
+                                controller: _mobileController,
+                                decoration: InputDecoration(
+                                  hintText: _isOtherLogin ? 'Worker ID / Mobile Number' : 'Mobile Number',
+                                  prefixIcon: const Icon(Icons.phone_outlined, size: 20, color: Color(0xFF64748B)),
+                                  filled: true,
+                                  fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: const BorderSide(color: Color(0xFF1E824C), width: 1.8),
+                                  ),
+                                ),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter mobile/ID' : null,
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Password Input with show/hide eye toggle
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  hintText: 'Password',
+                                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20, color: Color(0xFF64748B)),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                      size: 20,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  ),
+                                  filled: true,
+                                  fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: const BorderSide(color: Color(0xFF1E824C), width: 1.8),
+                                  ),
+                                ),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter password' : null,
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Solid Green Log In Button
+                              SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton(
+                                  onPressed: _isLoading ? null : _handleLogIn,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF1E824C),
+                                    foregroundColor: Colors.white,
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                  ),
+                                  child: _isLoading
+                                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                      : const Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text('Log In', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                                            SizedBox(width: 8),
+                                            Icon(Icons.arrow_forward_rounded, size: 18),
+                                          ],
+                                        ),
+                                ),
+                              ),
+
+                              // ==========================================
+                              // CONDITIONAL SECTION: "OR Login as"
+                              // ONLY VISIBLE WHEN "Other Login" IS SELECTED
+                              // OTHERWISE COMPLETELY HIDDEN
+                              // ==========================================
+                              if (_isOtherLogin) ...[
+                                const SizedBox(height: 20),
+                                
+                                // Divider: ─── OR ───
+                                Row(
+                                  children: [
+                                    Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      child: Text(
+                                        'OR',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.grey.shade500,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Login as',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // 4 Role Selector Options:
+                                // [ Health Worker ] [ Doctor ] [ Health Officer ] [ Patient / Family ]
+                                Row(
+                                  children: [
+                                    _buildOtherRoleItem('Health Worker', Icons.medical_services_rounded),
+                                    const SizedBox(width: 6),
+                                    _buildOtherRoleItem('Doctor', Icons.health_and_safety_rounded),
+                                    const SizedBox(width: 6),
+                                    _buildOtherRoleItem('Health Officer', Icons.security_rounded),
+                                    const SizedBox(width: 6),
+                                    _buildOtherRoleItem('Patient / Family', Icons.groups_rounded),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 14),
+                                // Bottom Leaf Accent: ── 🌿 ──
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(width: 24, height: 1, color: Colors.grey.shade300),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8),
+                                      child: Text('🌿', style: TextStyle(fontSize: 14)),
+                                    ),
+                                    Container(width: 24, height: 1, color: Colors.grey.shade300),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 28),
-
-              // Main Bold Headline
-              Text(
-                'Better Care\nCloser to Every Home',
-                style: TextStyle(
-                  fontSize: isMobile ? 28 : 36,
-                  fontWeight: FontWeight.w900,
-                  height: 1.15,
-                  letterSpacing: -0.5,
-                  color: isDark ? Colors.white : const Color(0xFF0C3829),
                 ),
               ),
-            ],
-          ),
-
-          const SizedBox(height: 30),
-
-          // Bottom Slogan Badge & Tricolor Flag motif
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF132F23) : Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark ? const Color(0xFF1E4D3A) : const Color(0xFFCDE5D8),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🌿', style: TextStyle(fontSize: 22)),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Swasth Gaon • Sashakt Bharat',
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                        color: Color(0xFF007953),
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Container(width: 14, height: 3, decoration: BoxDecoration(color: const Color(0xFFFF9933), borderRadius: BorderRadius.circular(2))),
-                        const SizedBox(width: 3),
-                        Container(width: 14, height: 3, decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.grey.shade400, width: 0.5), borderRadius: BorderRadius.circular(2))),
-                        const SizedBox(width: 3),
-                        Container(width: 14, height: 3, decoration: BoxDecoration(color: const Color(0xFF138808), borderRadius: BorderRadius.circular(2))),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  // Right Form Side (Matching user's reference)
-  Widget _buildLoginForm(bool isDark) {
-    return Container(
-      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-      padding: const EdgeInsets.all(32),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Right Language Selector
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF334155) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: isDark ? const Color(0xFF475569) : Colors.grey.shade300),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedLanguage,
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.slate.shade700,
-                        ),
-                        dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        items: const [
-                          DropdownMenuItem(value: 'English', child: Text('🌐 English')),
-                          DropdownMenuItem(value: 'हिन्दी', child: Text('🌐 हिन्दी')),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedLanguage = val);
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Welcome Back Header
-                Text(
-                  'Welcome Back',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Sign in to continue to ArogyaSaathi',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // 3 Role Tabs Row (ASHA / ANM, Doctor, Health Officer)
-                Row(
-                  children: [
-                    _buildRoleBox('ASHA / ANM', Icons.medical_services_outlined, 'ASHA-RAMPUR-7821', isDark),
-                    const SizedBox(width: 8),
-                    _buildRoleBox('Doctor', Icons.health_and_safety_outlined, 'DR-VERMA-PHC-402', isDark),
-                    const SizedBox(width: 8),
-                    _buildRoleBox('Health Officer', Icons.groups_outlined, 'OFFICER-DIST-881', isDark),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Username / Mobile Number Input
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: InputDecoration(
-                    hintText: 'Username / Mobile Number',
-                    prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-                    filled: true,
-                    fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF007953), width: 1.8),
-                    ),
-                  ),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter username' : null,
-                ),
-                const SizedBox(height: 14),
-
-                // Password Input with show/hide toggle
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    hintText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        size: 20,
-                      ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                    filled: true,
-                    fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF007953), width: 1.8),
-                    ),
-                  ),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter password' : null,
-                ),
-                const SizedBox(height: 12),
-
-                // Remember me & Forgot Password
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: Checkbox(
-                            value: _rememberMe,
-                            activeColor: const Color(0xFF007953),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                            onChanged: (val) => setState(() => _rememberMe = val ?? true),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Remember me',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white70 : const Color(0xFF334155),
-                          ),
-                        ),
-                      ],
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Password recovery link sent to registered mobile.')),
-                        );
-                      },
-                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                      child: const Text(
-                        'Forgot password?',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF007953),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Sign In Button (Exact emerald #007953)
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSignIn,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF007953),
-                      foregroundColor: Colors.white,
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Sign In', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward_rounded, size: 18),
-                            ],
-                          ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // Bottom Security Pill Box
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF132F23) : const Color(0xFFF4FAF6),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFD3EBDD)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.verified_user_rounded, color: Color(0xFF007953), size: 24),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Secure • Private • For Better Healthcare',
-                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: Color(0xFF0F172A)),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Your data is safe and used only for healthcare purposes.',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
 
-  Widget _buildRoleBox(String role, IconData icon, String defaultUser, bool isDark) {
-    final isSelected = _selectedRole == role;
+  Widget _buildOtherRoleItem(String roleName, IconData icon) {
+    final isSelected = _selectedOtherRole == roleName;
 
     return Expanded(
       child: InkWell(
-        onTap: () => _onRoleSelected(role, defaultUser),
-        borderRadius: BorderRadius.circular(16),
+        onTap: () => _onSelectOtherRole(roleName),
+        borderRadius: BorderRadius.circular(14),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFFE8F7F0)
-                : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
-            borderRadius: BorderRadius.circular(16),
+            color: isSelected ? const Color(0xFFE8F7F0) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected ? const Color(0xFF007953) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-              width: isSelected ? 2.0 : 1.0,
+              color: isSelected ? const Color(0xFF1E824C) : const Color(0xFFE2E8F0),
+              width: isSelected ? 1.8 : 1.0,
             ),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
-                color: isSelected ? const Color(0xFF007953) : (isDark ? Colors.white60 : const Color(0xFF64748B)),
                 size: 20,
+                color: isSelected ? const Color(0xFF1E824C) : const Color(0xFF64748B),
               ),
               const SizedBox(height: 4),
               Text(
-                role,
+                roleName,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 9.5,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? const Color(0xFF007953) : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                  color: isSelected ? const Color(0xFF1E824C) : const Color(0xFF475569),
+                  height: 1.15,
                 ),
               ),
             ],
