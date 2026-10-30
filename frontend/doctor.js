@@ -31,6 +31,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('refreshQueueBtn').addEventListener('click', loadEscalations);
   document.getElementById('refreshAuditBtn').addEventListener('click', refreshAudit);
+  document.addEventListener('click', async (ev) => {
+    if (ev.target.closest('#delCaseBtn')) {
+      if (await confirmAndDelete(`/api/v1/escalations/${selectedCaseId}/delete`, 'Delete this reviewed case? The review will no longer count as labelled data.')) {
+        selectedCaseId = null;
+        loadEscalations();
+      }
+    }
+    if (ev.target.closest('#delPatientBtn')) {
+      const p = patients.find((x) => x.id === selectedTrendId);
+      if (p && await confirmAndDelete(`/api/v1/doctor/patients/${p.id}/delete`,
+        `Delete ${p.name || p.pseudonym}'s record for good? Readings, notes, referrals, chat and their cases are erased. This cannot be undone.`)) {
+        selectedTrendId = null;
+        await loadPatients();
+        loadEscalations();
+      }
+    }
+  });
   loadEscalations();
   if (window.location.hash === '#audit') refreshAudit();
   if (window.location.hash === '#patients') loadPatients();
@@ -123,6 +140,7 @@ function renderCase() {
         <span><strong>${e.review.decision === 'AGREE' ? 'Agreed' : 'Overridden'}</strong>: system said ${esc(LEVEL_TEXT[e.level])}, final ${esc(LEVEL_TEXT[e.review.final_level] || e.review.final_level)}.
         ${e.review.note ? `<br>Note: ${esc(e.review.note)}` : ''}<br>${esc(e.review.reviewer_name || e.review.reviewer)} · ${esc(formatDateTime(e.review.reviewed_at))}</span>
       </div>
+      <div class="btn-row" style="margin-top: 12px;"><button type="button" class="btn btn-ghost btn-delete" id="delCaseBtn">🗑 Delete this case</button></div>
     </div>` : `
     <form class="panel" id="reviewForm">
       <div class="panel-title">Your review</div>
@@ -276,6 +294,7 @@ function renderTrendList() {
         <div class="list-meta">${esc(p.pseudonym)} · ${esc(p.conditions.join(', ') || 'No condition recorded')}${p.next_visit ? ` · Next visit ${esc(p.next_visit)}` : ''}
           ${r.risk_level !== 'NO_DATA' ? ` · Avg BP ${esc(r.average_systolic ?? '–')}/${esc(r.average_diastolic ?? '–')} · Avg sugar ${esc(r.average_glucose ?? '–')} · Adherence ${esc(r.adherence_rate_pct)}%` : ''}</div>
       </div>
+      <button type="button" class="btn btn-ghost btn-delete" id="delPatientBtn">🗑 Delete record</button>
     </div>
     <div class="list-flags" style="margin-bottom: 12px;">${r.flags.map((f) => `<span class="chip chip-red">${esc(prettyCode(f))}</span>`).join('') || '<span class="chip">No flags</span>'}</div>
     <div class="grid-2">

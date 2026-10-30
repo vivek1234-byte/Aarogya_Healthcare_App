@@ -29,8 +29,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupRegistration();
   setupReferral();
   setupSignals();
+  setupDeletes();
   await loadPatients();
 });
+
+function setupDeletes() {
+  document.getElementById('referralHistory').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-del-referral]');
+    if (btn && await confirmAndDelete(`/api/v1/worker/referrals/${btn.dataset.delReferral}/delete`, 'Delete this referral record?')) loadReferrals();
+  });
+  document.getElementById('signalHistory').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-del-signal]');
+    if (btn && await confirmAndDelete(`/api/v1/worker/signals/${btn.dataset.delSignal}/delete`, 'Delete this daily report? Outbreak scoring will no longer count it.')) loadSignals();
+  });
+  document.getElementById('deleteAccountForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!window.confirm('Delete your ASHA account for good? You will be signed out and cannot log in again.')) return;
+    try {
+      await api('/api/v1/worker/account/delete', { password: document.getElementById('deletePassword').value });
+      clearSession();
+      window.location.replace('index.html');
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+}
 
 // ================= 1. PATIENTS =================
 async function loadPatients() {
@@ -115,6 +138,7 @@ function renderPatientDetail() {
         <button type="button" class="btn btn-ghost" id="pTriageBtn">🩺 Triage</button>
         <button type="button" class="btn btn-ghost" id="pReferBtn">🏥 Refer</button>
         ${p.account_status !== 'ACTIVE' ? '<button type="button" class="btn btn-ghost" id="pCodeBtn">🔑 New code</button>' : ''}
+        <button type="button" class="btn btn-ghost btn-delete" id="pDeleteBtn">🗑 Delete</button>
       </div>
       <div id="pCodeBox"></div>
       ${r.risk_level === 'NO_DATA' ? `<div class="notice notice-blue"><span>ℹ️</span><span>${esc(r.recommended_action)}</span></div>`
@@ -178,6 +202,11 @@ function renderPatientDetail() {
     switchTab('triage');
   });
   document.getElementById('pReferBtn').addEventListener('click', () => openReferral({ patientId: p.id }));
+  document.getElementById('pDeleteBtn').addEventListener('click', async () => {
+    const done = await confirmAndDelete(`/api/v1/worker/patients/${p.id}/delete`,
+      `Delete ${p.name}'s record for good? Their readings, medicine log, referrals and chat are erased and they can no longer sign in. This cannot be undone.`);
+    if (done) { selectedPatientId = null; await loadPatients(); }
+  });
   const codeBtn = document.getElementById('pCodeBtn');
   if (codeBtn) {
     codeBtn.addEventListener('click', async () => {
@@ -617,7 +646,7 @@ async function loadReferrals() {
       <div class="list-item"><div class="list-main">
         <div class="list-title">${esc(r.hospital.name)} ${levelBadge(r.urgency)}</div>
         <div class="list-meta">${esc(r.pseudonym)} · ${esc(formatDateTime(r.created_at))}${r.reason ? ` · ${esc(r.reason)}` : ''}</div>
-      </div></div>`).join('') : '<p class="empty-state">No referrals yet.</p>';
+      </div><button type="button" class="btn btn-ghost btn-delete" data-del-referral="${esc(r.id)}">🗑</button></div>`).join('') : '<p class="empty-state">No referrals yet.</p>';
   } catch (err) {
     showToast(err.message);
   }
@@ -654,8 +683,9 @@ async function loadSignals() {
     const rows = await api('/api/v1/worker/signals');
     document.getElementById('signalHistory').innerHTML = rows.length ? rows.map((r) => `
       <tr><td>${esc(r.date)}</td><td>${esc(r.pharmacy_ors_sales ?? '–')}</td><td>${esc(r.pharmacy_fever_sales ?? '–')}</td>
-      <td>${esc(r.school_absent ?? '–')}${r.school_enrolled ? ` / ${esc(r.school_enrolled)}` : ''}</td></tr>`).join('')
-      : '<tr><td colspan="4" class="empty-state">No reports yet.</td></tr>';
+      <td>${esc(r.school_absent ?? '–')}${r.school_enrolled ? ` / ${esc(r.school_enrolled)}` : ''}</td>
+      <td><button type="button" class="btn btn-ghost btn-delete" data-del-signal="${esc(r.id)}">🗑</button></td></tr>`).join('')
+      : '<tr><td colspan="5" class="empty-state">No reports yet.</td></tr>';
   } catch (err) {
     showToast(err.message);
   }

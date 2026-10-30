@@ -243,6 +243,7 @@ button { cursor: pointer; }
 .btn-green { background: var(--green-primary); color: #FFFFFF; }
 .btn-red { background: var(--red-primary); color: #FFFFFF; }
 .btn-ghost { background: var(--panel-bg); color: var(--text-primary); border: 1px solid var(--border-card); }
+.btn-delete { color: #B91C1C; border-color: #FCA5A5; }
 .btn-block { width: 100%; }
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
 

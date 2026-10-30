@@ -40,6 +40,7 @@
         <nav class="nav-pills">
           <button class="nav-pill active" data-tab="map">Outbreak Map <span class="nav-count hidden" id="alertCount"></span></button>
           <button class="nav-pill" data-tab="signals">Signals</button>
+          <button class="nav-pill" data-tab="staff">ASHA Staff</button>
           <button class="nav-pill" data-tab="audit">Audit Trail</button>
         </nav>
 
@@ -87,6 +88,17 @@
             <div class="panel"><p class="empty-state">Loading alerts…</p></div>
           </div>
         </div>
+      </section>
+
+      <!-- ================= ASHA STAFF ================= -->
+      <section class="staff-view" id="view-staff">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title">ASHA Staff</h1>
+            <p class="view-subtitle">If an ASHA has left the job, remove her account. Her patients stay in the village and move to another ASHA there.</p>
+          </div>
+        </div>
+        <div class="panel"><div class="list" id="staffList"></div></div>
       </section>
 
       <!-- ================= VIEW 2: SIGNALS ================= -->

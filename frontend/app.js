@@ -55,6 +55,19 @@ async function api(path, body) {
   return data;
 }
 
+/** Asks for confirmation, then POSTs a delete. Returns true when the record was deleted. */
+async function confirmAndDelete(path, message, body) {
+  if (!window.confirm(message)) return false;
+  try {
+    await api(path, body || {});
+    showToast('Deleted');
+    return true;
+  } catch (err) {
+    showToast(err.message);
+    return false;
+  }
+}
+
 /** Ensures the logged-in user has `role`; otherwise sends them to login or their own page. */
 function requireRole(role) {
   const user = storedUser();

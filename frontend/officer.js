@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTabs((tab) => {
     if (tab === 'audit') refreshAudit();
     if (tab === 'signals') renderSignals();
+    if (tab === 'staff') loadStaff();
     if (tab === 'map' && map) setTimeout(() => map.invalidateSize(), 50);
   });
   document.getElementById('refreshBtn').addEventListener('click', loadBlock);
@@ -26,9 +27,31 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedVillageId = e.target.value;
     renderSignals();
   });
+  document.addEventListener('click', async (ev) => {
+    const alertBtn = ev.target.closest('[data-del-alert]');
+    if (alertBtn && await confirmAndDelete(`/api/v1/surveillance/alerts/${alertBtn.dataset.delAlert}/delete`, 'Delete this alert from the list?')) loadBlock();
+    const staffBtn = ev.target.closest('[data-del-staff]');
+    if (staffBtn && await confirmAndDelete(`/api/v1/officer/staff/${staffBtn.dataset.delStaff}/delete`,
+      `Remove ${staffBtn.dataset.name}'s account? She will be signed out and cannot log in again. Her patients move to another ASHA of the village.`)) loadStaff();
+  });
   loadBlock();
   if (window.location.hash === '#audit') refreshAudit();
 });
+
+async function loadStaff() {
+  const host = document.getElementById('staffList');
+  try {
+    const rows = await api('/api/v1/officer/staff');
+    host.innerHTML = rows.length ? rows.map((a) => `
+      <div class="list-item"><div class="list-main">
+        <div class="list-title">${esc(a.name)}</div>
+        <div class="list-meta">${esc(a.village_name)} · 📞 ••••${esc(a.mobile_last4)} · ${esc(a.patients)} patients · joined ${esc(formatDateTime(a.created_at))}</div>
+      </div><button type="button" class="btn btn-ghost btn-delete" data-del-staff="${esc(a.id)}" data-name="${esc(a.name)}">🗑 Remove</button></div>`).join('')
+      : '<p class="empty-state">No ASHA accounts yet.</p>';
+  } catch (err) {
+    host.innerHTML = `<p class="empty-state">${esc(err.message)}</p>`;
+  }
+}
 
 async function loadBlock() {
   try {
@@ -134,6 +157,7 @@ function renderAlerts() {
         <h4>Rapid response checklist</h4>
         <ul class="checklist">${d.interventions.map((c) => `<li><label><input type="checkbox" ${a.status === 'ACKNOWLEDGED' ? 'checked disabled' : ''}><span>${esc(c)}</span></label></li>`).join('')}</ul>
       </div>
+      <div class="btn-row" style="margin-top: 12px;"><button type="button" class="btn btn-ghost btn-delete" data-del-alert="${esc(a.id)}">🗑 Delete alert</button></div>
       ${a.status === 'ACTIVE' ? `
         <form class="ack-form" data-id="${esc(a.id)}" style="margin-top: 14px;">
           <div class="form-group">

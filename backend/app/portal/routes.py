@@ -739,7 +739,7 @@ def evaluate_surveillance():
 def surveillance_block():
     villages = evaluate_surveillance()
     since = (datetime.now() - timedelta(days=14)).strftime('%Y-%m-%d')
-    alerts = db.query('SELECT * FROM alerts WHERE date >= ? ORDER BY created_at DESC', (since,))
+    alerts = db.query("SELECT * FROM alerts WHERE date >= ? AND status != 'DELETED' ORDER BY created_at DESC", (since,))
     for a in alerts:
         a['details'] = db.loads(a['details'], {})
         a['village_ids'] = db.loads(a['village_ids'], [])
@@ -749,6 +749,44 @@ def surveillance_block():
     reporting = sum(1 for v in villages if v['series']['reported_today'])
     return {'villages': villages, 'alerts': alerts, 'reporting_today': reporting,
             'baseline_min_days': BASELINE_MIN_DAYS, 'syndromes': {k: v['label'] for k, v in SYNDROMES.items()}}
+
+
+# ================= DELETION / ERASURE =================
+def erase_patient(patient_id, user):
+    """Wipes a patient's identity and all health data. The audit log keeps only the pseudonym."""
+    row = patient_row(patient_id)
+    if user['role'] == 'HEALTH_WORKER' and row['village_id'] != user['village_id']:
+        raise ApiError(403, 'This patient is not in your village.')
+    with db.transaction() as conn:
+        for table in ('vitals', 'doses', 'chat_messages', 'reports', 'referrals', 'encounters', 'escalations'):
+            conn.execute(f'DELETE FROM {table} WHERE patient_id = ?', (patient_id,))
+        conn.execute('DELETE FROM sessions WHERE user_id = ?', (patient_id,))
+        conn.execute('DELETE FROM patients WHERE user_id = ?', (patient_id,))
+        conn.execute("UPDATE users SET status = 'ERASED', name_enc = ?, mobile_enc = ?, mobile_hash = ?, password_hash = NULL, "
+                     'activation_hash = NULL, activation_expires = NULL WHERE id = ?',
+                     (encrypt_pii(''), encrypt_pii(''), f'ERASED-{patient_id}', patient_id))
+    db.audit(user['id'], user['role'], 'PATIENT_RECORD_ERASED', {'patient': row['pseudonym'], 'village_id': row['village_id']})
+    return {'ok': True}
+
+
+def remove_asha(asha_id, user, own_account=False):
+    """Closes an ASHA account (she left the job). Her patients move to another ASHA of the village, if there is one."""
+    asha = db.query_one("SELECT * FROM users WHERE id = ? AND role = 'HEALTH_WORKER' AND status != 'ERASED'", (asha_id,))
+    if not asha:
+        raise ApiError(404, 'ASHA account not found.')
+    successor = db.query_one("SELECT id FROM users WHERE role = 'HEALTH_WORKER' AND status = 'ACTIVE' AND village_id = ? AND id != ? "
+                             'ORDER BY created_at LIMIT 1', (asha['village_id'], asha_id))
+    new_owner = successor['id'] if successor else None
+    patients = db.query_one('SELECT count(*) AS n FROM patients WHERE asha_id = ?', (asha_id,))['n']
+    with db.transaction() as conn:
+        conn.execute('UPDATE patients SET asha_id = ? WHERE asha_id = ?', (new_owner, asha_id))
+        conn.execute('DELETE FROM sessions WHERE user_id = ?', (asha_id,))
+        conn.execute("UPDATE users SET status = 'ERASED', name_enc = ?, mobile_enc = ?, mobile_hash = ?, password_hash = NULL WHERE id = ?",
+                     (encrypt_pii(''), encrypt_pii(''), f'ERASED-{asha_id}', asha_id))
+    db.audit(user['id'], user['role'], 'ASHA_ACCOUNT_REMOVED',
+             {'asha': asha_id, 'village_id': asha['village_id'], 'own_account': own_account, 'patients': patients,
+              'patients_moved_to': new_owner})
+    return {'ok': True, 'patients': patients, 'moved_to_another_asha': bool(new_owner)}
 
 
 # ================= ROUTER =================
@@ -836,6 +874,30 @@ def _dispatch(method, path, query, body, headers):
             return {'patients': patients, 'conditions': CONDITIONS, 'village': village(user['village_id'])}
         if method == 'POST' and path == '/api/v1/worker/patients':
             return 201, register_patient(user, body)
+        m = re.fullmatch(r'/api/v1/worker/patients/([A-Z0-9-]+)/delete', path)
+        if method == 'POST' and m:
+            return erase_patient(m.group(1), user)
+        m = re.fullmatch(r'/api/v1/worker/referrals/([A-Z0-9-]+)/delete', path)
+        if method == 'POST' and m:
+            ref = db.query_one('SELECT id, pseudonym FROM referrals WHERE id = ? AND village_id = ?', (m.group(1), user['village_id']))
+            if not ref:
+                raise ApiError(404, 'Referral not found.')
+            db.execute('DELETE FROM referrals WHERE id = ?', (ref['id'],))
+            db.audit(user['id'], 'HEALTH_WORKER', 'REFERRAL_DELETED', {'referral_id': ref['id'], 'patient': ref['pseudonym']})
+            return {'ok': True}
+        m = re.fullmatch(r'/api/v1/worker/signals/(\d+)/delete', path)
+        if method == 'POST' and m:
+            sig = db.query_one('SELECT id, date FROM signals WHERE id = ? AND village_id = ?', (int(m.group(1)), user['village_id']))
+            if not sig:
+                raise ApiError(404, 'Report not found.')
+            db.execute('DELETE FROM signals WHERE id = ?', (sig['id'],))
+            db.audit(user['id'], 'HEALTH_WORKER', 'DAILY_REPORT_DELETED', {'village_id': user['village_id'], 'date': sig['date']})
+            return {'ok': True}
+        if method == 'POST' and path == '/api/v1/worker/account/delete':
+            if not auth.verify_password(str(body.get('password') or ''), user['password_hash'] or ''):
+                raise ApiError(403, 'Wrong password. Your account was not deleted.')
+            auth.logout(token)
+            return remove_asha(user['id'], user, own_account=True)
         m = re.fullmatch(r'/api/v1/worker/patients/([A-Z0-9-]+)/(checkin|activation-code)', path)
         if method == 'POST' and m:
             if m.group(2) == 'checkin':
@@ -923,6 +985,19 @@ def _dispatch(method, path, query, body, headers):
             db.audit(user['id'], 'DOCTOR', 'HUMAN_OVERRIDE' if decision == 'OVERRIDE' else 'CLINICIAN_REVIEW',
                      {'escalation_id': esc['id'], 'system_level': esc['level'], 'final_level': final_level, 'note': review['note']})
             return {'ok': True}
+        m = re.fullmatch(r'/api/v1/doctor/patients/([A-Z0-9-]+)/delete', path)
+        if method == 'POST' and m:
+            return erase_patient(m.group(1), user)
+        m = re.fullmatch(r'/api/v1/escalations/([A-Z0-9-]+)/delete', path)
+        if method == 'POST' and m:
+            esc = db.query_one('SELECT id, status, pseudonym FROM escalations WHERE id = ?', (m.group(1),))
+            if not esc:
+                raise ApiError(404, 'Escalation not found.')
+            if esc['status'] != 'REVIEWED':
+                raise ApiError(409, 'Review this case first. Pending cases cannot be deleted.')
+            db.execute('DELETE FROM escalations WHERE id = ?', (esc['id'],))
+            db.audit(user['id'], 'DOCTOR', 'ESCALATION_DELETED', {'escalation_id': esc['id'], 'patient': esc['pseudonym']})
+            return {'ok': True}
         if method == 'GET' and path == '/api/v1/doctor/patients':
             rows = db.query("SELECT p.*, u.name_enc, u.mobile_enc, u.status FROM patients p JOIN users u ON u.id = p.user_id "
                             "WHERE u.status != 'ERASED'")
@@ -944,10 +1019,30 @@ def _dispatch(method, path, query, body, headers):
         return None
 
     # ---------- officer ----------
+    if path.startswith('/api/v1/officer/'):
+        require(user, 'HEALTH_OFFICER')
+        if method == 'GET' and path == '/api/v1/officer/staff':
+            rows = db.query("SELECT * FROM users WHERE role = 'HEALTH_WORKER' AND status != 'ERASED' ORDER BY created_at")
+            return [{'id': r['id'], 'name': auth.decrypt(r['name_enc']), 'mobile_last4': auth.decrypt(r['mobile_enc'])[-4:],
+                     'village_name': village_name(r['village_id']), 'created_at': r['created_at'],
+                     'patients': db.query_one('SELECT count(*) AS n FROM patients WHERE village_id = ?', (r['village_id'],))['n']}
+                    for r in rows]
+        m = re.fullmatch(r'/api/v1/officer/staff/([A-Z0-9-]+)/delete', path)
+        if method == 'POST' and m:
+            return remove_asha(m.group(1), user)
+        return None
     if path.startswith('/api/v1/surveillance/'):
         require(user, 'HEALTH_OFFICER')
         if method == 'GET' and path == '/api/v1/surveillance/block':
             return surveillance_block()
+        m = re.fullmatch(r'/api/v1/surveillance/alerts/([A-Za-z0-9-]+)/delete', path)
+        if method == 'POST' and m:
+            alert = db.query_one("SELECT id FROM alerts WHERE id = ? AND status != 'DELETED'", (m.group(1),))
+            if not alert:
+                raise ApiError(404, 'Alert not found.')
+            db.execute("UPDATE alerts SET status = 'DELETED' WHERE id = ?", (alert['id'],))
+            db.audit(user['id'], 'HEALTH_OFFICER', 'OUTBREAK_ALERT_DELETED', {'alert_id': alert['id']})
+            return {'ok': True}
         m = re.fullmatch(r'/api/v1/surveillance/alerts/([A-Za-z0-9-]+)/ack', path)
         if method == 'POST' and m:
             alert = db.query_one('SELECT * FROM alerts WHERE id = ?', (m.group(1),))
