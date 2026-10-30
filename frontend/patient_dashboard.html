@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Meditek - Patient Health Dashboard</title>
   <script>
-    // Ensure user logs in from index.html first
+    // Ensure user logs in from index.html first (or direct dev access)
+    if (window.location.search.includes('dev=1')) {
+      sessionStorage.setItem('meditek_logged_in', 'true');
+    }
     if (!sessionStorage.getItem('meditek_logged_in')) {
       window.location.replace('index.html');
     }
@@ -50,10 +53,7 @@
         <!-- Navigation Pills -->
         <nav class="nav-pills">
           <button class="nav-pill active" data-tab="home">Home</button>
-          <button class="nav-pill" data-tab="ai-chat">AI Chat</button>
-          <button class="nav-pill" data-tab="heart-rate">Heart Rate</button>
           <button class="nav-pill" data-tab="report">Report</button>
-          <button class="nav-pill" data-tab="setting">Setting</button>
         </nav>
 
         <!-- Search Bar -->
@@ -352,71 +352,7 @@
             <span>Aug</span>
             <span>Sep</span>
             <span>Oct</span>
-            <span>Nov</span>
-            <span>Dec</span>
-          </div>
         </div>
-
-
-        <!-- Right: AI Assistant Card -->
-        <div class="analytics-card ai-assistant-card" id="coach">
-          <div class="analytics-header">
-            <div class="header-left-title">
-              <div class="glow-icon icon-indigo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                </svg>
-              </div>
-              <span class="analytics-title">AI Assistant</span>
-            </div>
-            <button class="more-options-btn" title="Options">•••</button>
-          </div>
-
-          <!-- 3D Iridescent Glowing AI Orb -->
-          <div class="orb-container">
-            <img src="assets/ai_orb.jpg" alt="3D AI Assistant Glowing Orb" class="iridescent-orb" id="aiOrb">
-          </div>
-
-          <!-- Greeting -->
-          <div class="ai-greeting">
-            <div class="greeting-subtitle">Hi, Melina</div>
-            <div class="greeting-title">How can I help you?</div>
-          </div>
-
-          <!-- Quick Action Pills -->
-          <div class="ai-action-pills">
-            <button class="action-pill pill-diet" data-prompt="diet">
-              <span>🥗</span> Diet Plan
-            </button>
-            <button class="action-pill pill-workout" data-prompt="workout">
-              <span>🏃</span> Workout Plan
-            </button>
-            <button class="action-pill pill-sleep" data-prompt="sleep">
-              <span>😴</span> Improve Sleep
-            </button>
-          </div>
-
-          <!-- Interactive Chat Input -->
-          <form class="ai-chat-input-bar" id="aiChatForm">
-            <input type="text" id="aiInput" placeholder="Ask your health coach..." autocomplete="off">
-            <button type="submit" class="ai-send-btn" title="Send Question">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            </button>
-          </form>
-
-          <!-- Expandable AI Live Response Drawer -->
-          <div class="ai-response-box" id="aiResponseBox" style="display: none;">
-            <div class="response-header">
-              <span class="response-title" id="aiResponseTitle">Health Coach Insights</span>
-              <button class="response-close" id="aiResponseClose">&times;</button>
-            </div>
-            <p class="response-text" id="aiResponseText">Loading personalized recommendations...</p>
-            <div class="response-stats" id="aiResponseStats"></div>
-          </div>
-        </div>
-
       </section>
 
 
@@ -634,6 +570,79 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- ================= FLOATING AI HEALTH COACH POPUP (BOTTOM-DOWN RIGHT) ================= -->
+  <div class="ai-floating-container" id="coach">
+
+    <!-- Expandable AI Popup Card -->
+    <div class="ai-popup-card hidden" id="aiPopupCard">
+      <div class="popup-top-bar">
+        <div class="popup-title-group">
+          <div class="glow-icon icon-indigo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="popup-main-title">AI Assistant</div>
+            <div class="popup-live-indicator"><span class="live-dot"></span> Online Clinical Coach</div>
+          </div>
+        </div>
+        <button type="button" class="popup-close-btn" id="closeAiPopupBtn" aria-label="Close AI Assistant">✕</button>
+      </div>
+
+      <!-- 3D Iridescent Glowing AI Orb -->
+      <div class="orb-container">
+        <img src="assets/ai_orb.jpg" alt="3D AI Assistant Glowing Orb" class="iridescent-orb" id="aiOrb">
+      </div>
+
+      <!-- Greeting -->
+      <div class="ai-greeting">
+        <div class="greeting-subtitle">Hi, Melina</div>
+        <div class="greeting-title">How can I help you?</div>
+      </div>
+
+      <!-- Quick Action Pills -->
+      <div class="ai-action-pills">
+        <button type="button" class="action-pill pill-diet" data-prompt="diet">
+          <span>🥗</span> Diet Plan
+        </button>
+        <button type="button" class="action-pill pill-workout" data-prompt="workout">
+          <span>🏃</span> Workout Plan
+        </button>
+        <button type="button" class="action-pill pill-sleep" data-prompt="sleep">
+          <span>😴</span> Improve Sleep
+        </button>
+      </div>
+
+      <!-- Interactive Chat Input -->
+      <form class="ai-chat-input-bar" id="aiChatForm">
+        <input type="text" id="aiInput" placeholder="Ask your health coach..." autocomplete="off">
+        <button type="submit" class="ai-send-btn" title="Send Question">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Expandable AI Live Response Drawer -->
+      <div class="ai-response-box" id="aiResponseBox" style="display: none;">
+        <div class="response-header">
+          <span class="response-title" id="aiResponseTitle">Health Coach Insights</span>
+          <button type="button" class="response-close" id="aiResponseClose">&times;</button>
+        </div>
+        <p class="response-text" id="aiResponseText">Loading personalized recommendations...</p>
+        <div class="response-stats" id="aiResponseStats"></div>
+      </div>
+    </div>
+
+    <!-- Floating Trigger Launcher Button in Bottom Down Right -->
+    <button type="button" class="ai-float-trigger" id="aiFloatTrigger" title="Open AI Assistant">
+      <img src="assets/ai_orb.jpg" alt="AI Orb" class="trigger-orb">
+      <span class="trigger-label">AI Coach</span>
+      <span class="trigger-badge"></span>
+    </button>
   </div>
 
   <!-- Toast Notification -->

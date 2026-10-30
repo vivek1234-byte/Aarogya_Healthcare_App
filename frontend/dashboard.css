@@ -625,7 +625,7 @@ body {
 /* ================= 3. ROW 2: MAIN ANALYTICS GRID ================= */
 .main-analytics-grid {
   display: grid;
-  grid-template-columns: 1.85fr 1fr;
+  grid-template-columns: 1fr;
   gap: 18px;
 }
 
@@ -818,13 +818,184 @@ body {
   font-weight: 500;
 }
 
-/* Right: AI Assistant Card */
-.ai-assistant-card {
+/* ================= FLOATING AI HEALTH COACH POPUP (BOTTOM-DOWN RIGHT) ================= */
+.ai-floating-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Floating Trigger Launcher Button */
+.ai-float-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px 18px 8px 10px;
+  border-radius: 999px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35), 0 0 20px rgba(99, 102, 241, 0.25);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  user-select: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ai-float-trigger:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.4), 0 0 26px rgba(99, 102, 241, 0.4);
+}
+
+.ai-float-trigger:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.trigger-orb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.6);
+  animation: floatMiniOrb 3s ease-in-out infinite;
+}
+
+@keyframes floatMiniOrb {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.trigger-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0.2px;
+}
+
+.trigger-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background: #10B981;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #10B981;
+  border: 2px solid #0F172A;
+}
+
+/* Expandable AI Popup Card */
+.ai-popup-card {
+  position: absolute;
+  bottom: 64px;
+  right: 0;
+  width: 360px;
+  max-width: calc(100vw - 36px);
+  max-height: calc(85vh - 80px);
+  overflow-y: auto;
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: 28px;
+  padding: 20px 22px;
+  box-shadow: 0 24px 50px -10px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  transform-origin: bottom right;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.24s ease, visibility 0.24s ease;
+  z-index: 1000;
+}
+
+.ai-popup-card.hidden {
+  opacity: 0;
+  transform: translateY(16px) scale(0.92);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.ai-popup-card.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.popup-top-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F1F5F9;
+  margin-bottom: 8px;
+}
+
+.popup-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.popup-main-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.popup-live-indicator {
+  font-size: 11px;
+  color: #10B981;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 6px #10B981;
+}
+
+.popup-close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #F1F5F9;
+  border: none;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.popup-close-btn:hover,
+.popup-close-btn:active {
+  background: #E2E8F0;
+  color: var(--text-primary);
+  transform: scale(1.08);
+}
+
+.ai-popup-card .orb-container {
+  width: 90px;
+  height: 90px;
+  margin: 6px 0;
 }
 
 .orb-container {
@@ -1615,5 +1786,16 @@ body {
 
   .spline-chart-wrapper {
     height: 180px;
+  }
+
+  .ai-floating-container {
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    right: 18px;
+  }
+
+  .ai-popup-card {
+    width: calc(100vw - 32px);
+    right: 0;
+    max-height: calc(80vh - 70px);
   }
 }

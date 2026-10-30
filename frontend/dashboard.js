@@ -422,6 +422,54 @@ function renderDailyInputs() {
 
 // ================= 9. AI ASSISTANT & HEALTH COACH =================
 function setupAiAssistant() {
+  const popupCard = document.getElementById("aiPopupCard");
+  const floatTrigger = document.getElementById("aiFloatTrigger");
+  const closePopupBtn = document.getElementById("closeAiPopupBtn");
+  const floatingContainer = document.querySelector(".ai-floating-container");
+
+  const openAiPopup = () => {
+    if (popupCard) {
+      popupCard.classList.remove("hidden");
+      popupCard.classList.add("visible");
+    }
+  };
+
+  const closeAiPopup = () => {
+    if (popupCard) {
+      popupCard.classList.add("hidden");
+      popupCard.classList.remove("visible");
+    }
+  };
+
+  const toggleAiPopup = (e) => {
+    if (e) e.stopPropagation();
+    if (popupCard && popupCard.classList.contains("visible")) {
+      closeAiPopup();
+    } else {
+      openAiPopup();
+    }
+  };
+
+  if (floatTrigger) {
+    floatTrigger.addEventListener("click", toggleAiPopup);
+  }
+
+  if (closePopupBtn) {
+    closePopupBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeAiPopup();
+    });
+  }
+
+  // Close when clicking outside
+  document.addEventListener("click", (e) => {
+    if (popupCard && popupCard.classList.contains("visible")) {
+      if (floatingContainer && !floatingContainer.contains(e.target)) {
+        closeAiPopup();
+      }
+    }
+  });
+
   const pills = document.querySelectorAll(".action-pill");
   const form = document.getElementById("aiChatForm");
   const input = document.getElementById("aiInput");
@@ -680,8 +728,11 @@ function setupNavigation() {
       pills.forEach((x) => x.classList.remove("active"));
       p.classList.add("active");
       const tab = p.getAttribute("data-tab");
-      if (tab === "ai-chat") {
-        document.getElementById("coach")?.scrollIntoView({ behavior: "smooth" });
+      if (tab === "home") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (tab === "report") {
+        document.querySelector(".hr-main-card")?.scrollIntoView({ behavior: "smooth" });
+        showToast("Displaying your weekly clinical health summary");
       }
     });
   });
@@ -695,6 +746,19 @@ function setupProfileDropdown() {
     e.stopPropagation();
     dropdown.classList.toggle("open");
   });
+
+  const coachLink = dropdown?.querySelector('a[href="#coach"]');
+  if (coachLink) {
+    coachLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      dropdown.classList.remove("open");
+      const popupCard = document.getElementById("aiPopupCard");
+      if (popupCard) {
+        popupCard.classList.remove("hidden");
+        popupCard.classList.add("visible");
+      }
+    });
+  }
 
   const signoutBtn = dropdown?.querySelector(".signout");
   if (signoutBtn) {
