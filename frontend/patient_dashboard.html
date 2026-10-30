@@ -2,13 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Meditek - Patient Health Dashboard</title>
+  <script>
+    // Ensure user logs in from index.html first
+    if (!sessionStorage.getItem('meditek_logged_in')) {
+      window.location.replace('index.html');
+    }
+  </script>
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#FFFFFF">
   <link rel="apple-touch-icon" href="assets/melina_avatar.jpg">
   <link rel="stylesheet" href="dashboard.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,17 +56,17 @@
           <button class="nav-pill" data-tab="setting">Setting</button>
         </nav>
 
-        <!-- Right Controls: Search, Bell, Profile -->
-        <div class="header-right">
-          <!-- Search Bar -->
-          <div class="search-box">
-            <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="9" cy="9" r="6" stroke="#94A3B8" stroke-width="1.8" />
-              <path d="M13.5 13.5L17.5 17.5" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" />
-            </svg>
-            <input type="text" id="searchInput" placeholder="Search health data, insights..." autocomplete="off">
-          </div>
+        <!-- Search Bar -->
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="9" cy="9" r="6" stroke="#94A3B8" stroke-width="1.8" />
+            <path d="M13.5 13.5L17.5 17.5" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search health data, insights..." autocomplete="off">
+        </div>
 
+        <!-- Right Controls: Bell, Profile -->
+        <div class="header-actions">
           <!-- Notification Bell -->
           <button class="bell-btn" id="bellBtn" title="Notifications">
             <svg viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

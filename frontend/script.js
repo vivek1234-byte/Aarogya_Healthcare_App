@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (currentLoginType === 'patient') {
+      sessionStorage.setItem('meditek_logged_in', 'true');
       window.location.href = 'patient_dashboard.html';
     } else {
       alert(`🎉 Logged In as ${selectedOtherRole}\n• Identifier: ${mobileOrId}\n• Session Authenticated under DPDP Act 2023`);

@@ -1,11 +1,11 @@
 {
   "name": "Meditek Patient Healthcare",
   "short_name": "Meditek",
-  "start_url": "patient_dashboard.html",
+  "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#ECEFEB",
-  "theme_color": "#111827",
+  "background_color": "#E5F3EC",
+  "theme_color": "#E5F3EC",
   "description": "Meditek Real-time Patient Health & Vitals Dashboard",
   "icons": [
     {

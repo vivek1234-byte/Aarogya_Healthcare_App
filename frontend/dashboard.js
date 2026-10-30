@@ -330,11 +330,12 @@ function renderStepBars() {
   document.getElementById("stepCount").textContent = count.toLocaleString();
   document.getElementById("stepChange").textContent = change_pct;
 
+  const maxVal = Math.max(...hourly, 100);
   container.innerHTML = "";
   hourly.forEach((val) => {
     const bar = document.createElement("div");
     bar.className = "step-bar";
-    const barHeight = Math.max(val * 0.38, 4);
+    const barHeight = val === 0 ? 3 : Math.max(Math.round((val / maxVal) * 36), 4);
     bar.style.height = `${barHeight}px`;
     container.appendChild(bar);
   });
@@ -694,6 +695,15 @@ function setupProfileDropdown() {
     e.stopPropagation();
     dropdown.classList.toggle("open");
   });
+
+  const signoutBtn = dropdown?.querySelector(".signout");
+  if (signoutBtn) {
+    signoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem("meditek_logged_in");
+      window.location.href = "index.html";
+    });
+  }
 
   document.addEventListener("click", () => {
     dropdown.classList.remove("open");

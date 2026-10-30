@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meditek-cache-v1';
+const CACHE_NAME = 'meditek-cache-v3';
 const ASSETS_TO_CACHE = [
   './',
   'patient_dashboard.html',

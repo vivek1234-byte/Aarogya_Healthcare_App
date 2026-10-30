@@ -56,4 +56,5 @@ frontend/assets/icons/
 # Scratch generator scripts
 generate_exact_image_design.py
 generate_perfect_interface.py
+*.apk
 

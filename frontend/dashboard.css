@@ -151,10 +151,11 @@ body {
 }
 
 /* Right Controls */
+.header-actions,
 .header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .search-box {
@@ -1089,15 +1090,18 @@ body {
   align-items: flex-end;
   justify-content: space-between;
   height: 38px;
+  max-height: 38px;
   margin-top: 16px;
   gap: 2px;
+  overflow: hidden;
 }
 
 .step-bar {
   flex: 1;
   background: #A3E635;
   border-radius: 999px;
-  min-height: 4px;
+  min-height: 3px;
+  max-height: 38px;
   transition: height 0.3s;
 }
 
@@ -1512,27 +1516,104 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (display-mode: standalone) {
   body {
-    padding: 12px;
+    padding: 0;
+    margin: 0;
+    background-color: #FFFFFF;
+    background-image: none;
+    align-items: flex-start;
   }
+
+  .dashboard-wrapper {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   .dashboard-card {
-    padding: 20px;
-    border-radius: 24px;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px)) 16px;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    gap: 16px;
   }
+
   .dashboard-header {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "logo actions"
+      "search search"
+      "nav nav";
+    gap: 12px;
   }
+
+  .brand-logo {
+    grid-area: logo;
+  }
+
+  .header-actions {
+    grid-area: actions;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .search-box {
+    grid-area: search;
+    width: 100%;
+  }
+
   .nav-pills {
-    order: 3;
+    grid-area: nav;
     width: 100%;
     overflow-x: auto;
-    padding-bottom: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
   }
-  .search-box {
-    width: 160px;
+
+  .nav-pills::-webkit-scrollbar {
+    display: none;
   }
+
+  .nav-pill {
+    flex-shrink: 0;
+    padding: 8px 16px;
+  }
+
+  .profile-name,
+  .chevron-icon {
+    display: none;
+  }
+
+  .profile-menu {
+    padding: 2px;
+  }
+
   .vitals-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .analytics-card {
+    padding: 16px 18px;
+    border-radius: 20px;
+  }
+
+  .bottom-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .bottom-card {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .spline-chart-wrapper {
+    height: 180px;
   }
 }
