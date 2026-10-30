@@ -7,7 +7,10 @@ without requiring external heavy dependencies.
 import sys
 import os
 import json
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import socket
+import threading
+import time
+from http.server import ThreadingHTTPServer, HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 
 # Ensure backend root is in sys.path
@@ -144,6 +147,22 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
         self._send_cors_headers()
         self.end_headers()
 
+    def do_HEAD(self):
+        # Support HEAD requests cleanly for health-checks, curl -I, and pre-fetches
+        url = urllib.parse.urlparse(self.path)
+        path = url.path
+        self.send_response(200)
+        self._send_cors_headers()
+        if path.endswith('.json') or '/api/' in path:
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+        elif path.endswith('.css'):
+            self.send_header('Content-Type', 'text/css; charset=utf-8')
+        elif path.endswith('.js'):
+            self.send_header('Content-Type', 'application/javascript; charset=utf-8')
+        else:
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.end_headers()
+
     def _read_json(self):
         content_length = int(self.headers.get('Content-Length', 0))
         if content_length > 0:
@@ -152,13 +171,16 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
         return {}
 
     def _send_json(self, status_code, data):
-        body = json.dumps(data).encode('utf-8')
-        self.send_response(status_code)
-        self._send_cors_headers()
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Content-Length', str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            body = json.dumps(data).encode('utf-8')
+            self.send_response(status_code)
+            self._send_cors_headers()
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
 
     def do_GET(self):
         url = urllib.parse.urlparse(self.path)
@@ -207,14 +229,17 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
                 '.webp': 'image/webp'
             }
             mime = mime_map.get(ext, 'application/octet-stream')
-            with open(target_file, 'rb') as f:
-                content = f.read()
-            self.send_response(200)
-            self._send_cors_headers()
-            self.send_header('Content-Type', mime)
-            self.send_header('Content-Length', str(len(content)))
-            self.end_headers()
-            self.wfile.write(content)
+            try:
+                with open(target_file, 'rb') as f:
+                    content = f.read()
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', mime)
+                self.send_header('Content-Length', str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
             return
 
         if '/chronic/village/' in path and '/action-queue' in path:
@@ -476,12 +501,58 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
         # Quiet standard logging
         pass
 
-def run(port=8080):
-    server_address = ('0.0.0.0', port)
-    httpd = HTTPServer(server_address, ArogyaApiHandler)
-    print(f"🏥 ArogyaSaathi Local Backend API running on http://0.0.0.0:{port}")
-    httpd.serve_forever()
+class DualStackServer(ThreadingHTTPServer):
+    address_family = socket.AF_INET6
+
+    def server_bind(self):
+        try:
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        except (AttributeError, OSError):
+            pass
+        super().server_bind()
+
+def create_server(port):
+    try:
+        server = DualStackServer(('::', port), ArogyaApiHandler)
+        return server, f"http://localhost:{port} & http://0.0.0.0:{port} (IPv4+IPv6 Dual-Stack)"
+    except Exception:
+        server = ThreadingHTTPServer(('0.0.0.0', port), ArogyaApiHandler)
+        return server, f"http://localhost:{port} & http://0.0.0.0:{port} (IPv4)"
+
+def run(ports=[8000, 8080]):
+    servers = []
+    threads = []
+    for port in ports:
+        try:
+            server, desc = create_server(port)
+            servers.append(server)
+            t = threading.Thread(target=server.serve_forever, daemon=True)
+            t.start()
+            threads.append(t)
+            print(f"🏥 ArogyaSaathi Local Backend API running on {desc}")
+        except Exception as e:
+            print(f"⚠️ Could not bind to port {port}: {e}")
+
+    if not servers:
+        print("❌ Error: Could not bind to any port!")
+        sys.exit(1)
+
+    print("🚀 All server endpoints ready! Press Ctrl+C to stop.")
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nShutting down server...")
+        for s in servers:
+            s.shutdown()
 
 if __name__ == '__main__':
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
-    run(port)
+    if len(sys.argv) > 1:
+        try:
+            specified = int(sys.argv[1])
+            target_ports = [specified] if specified not in [8000, 8080] else [8000, 8080]
+        except ValueError:
+            target_ports = [8000, 8080]
+    else:
+        target_ports = [8000, 8080]
+    run(target_ports)
