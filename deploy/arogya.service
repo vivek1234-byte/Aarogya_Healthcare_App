@@ -1,0 +1,24 @@
+[Unit]
+Description=ArogyaSaathi server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=arogya
+Group=arogya
+WorkingDirectory=/opt/arogya/backend
+# Dates (daily reports, "today") follow Indian time, the same as the phones
+Environment=TZ=Asia/Kolkata
+ExecStart=/opt/arogya/backend/.venv/bin/python -m app.local_server
+Restart=always
+RestartSec=3
+
+# Hardening: the app can only write its database and referral documents
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/arogya /opt/arogya/backend/storage_data
+
+[Install]
+WantedBy=multi-user.target

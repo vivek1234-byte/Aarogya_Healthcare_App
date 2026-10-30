@@ -178,7 +178,16 @@ class LangGraphClinicalOrchestrator:
         state.next_question_hi = None
         state.next_question_en = None
 
-        if "fever" in state.symptoms and state.duration_days >= 3:
+        if "chest_pain" in state.symptoms:
+            state.triage_level = "REFER"
+            state.decision_rationale = "Chest pain without red-flag signs still needs a same-day examination and ECG by a doctor."
+            state.protocol_citations = ["NHM Emergency Triage Protocol: any chest pain requires physician evaluation"]
+            state.checklist = [
+                "Refer to PHC / CHC today for examination and ECG",
+                "Check pulse and blood pressure before the patient leaves",
+                "Call 108 at once if pain worsens, spreads to the arm or jaw, or sweating / breathlessness starts"
+            ]
+        elif "fever" in state.symptoms and state.duration_days >= 3:
             state.triage_level = "REFER"
             state.decision_rationale = "Prolonged fever (>= 3 days) without immediate danger signs. Non-emergency referral to PHC Medical Officer for lab tests."
             state.protocol_citations = ["IMNCI Protocol: Fever of > 3 days duration"]

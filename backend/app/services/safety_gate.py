@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from app.schemas.triage import RedFlagCheckResult
 
 # Deterministic safety rule matrix (Zero-AI-hallucination layer)

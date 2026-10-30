@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ArogyaSaathi - Doctor</title>
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FFFFFF">
-  <link rel="stylesheet" href="staff.css">
+  <link rel="stylesheet" href="app.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -44,8 +44,8 @@
 
         <div class="header-user">
           <div class="user-chip">
-            <div class="user-name">Medical Officer</div>
-            <div class="user-id" data-staff-id></div>
+            <div class="user-name" data-user-name></div>
+            <div class="user-id" data-user-id></div>
           </div>
           <div class="user-avatar">🩺</div>
           <a href="index.html" class="btn-signout" data-signout>Sign Out</a>
@@ -57,7 +57,7 @@
         <div class="view-head">
           <div>
             <h1 class="view-title">Escalation Queue</h1>
-            <p class="view-subtitle">Cases escalated by voice triage red flags, referrals and chronic deterioration. Your agree or override decision is saved as a labelled case for improving triage.</p>
+            <p class="view-subtitle">Cases escalated by voice triage, patient chat red flags and chronic deterioration. Your agree or override decision is saved as a labelled case for improving triage.</p>
           </div>
           <button type="button" class="btn btn-ghost" id="refreshQueueBtn">↻ Refresh</button>
         </div>
@@ -91,7 +91,7 @@
         <div class="view-head">
           <div>
             <h1 class="view-title">Patient Trends</h1>
-            <p class="view-subtitle">BP, sugar and medicine adherence for chronic patients followed up by health workers.</p>
+            <p class="view-subtitle">BP, sugar and medicine adherence for registered patients. Send advice that the patient reads (or hears) in their app.</p>
           </div>
         </div>
         <div class="grid-split">
@@ -127,7 +127,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="staff.js"></script>
+  <script src="app.js"></script>
   <script src="doctor.js"></script>
 </body>
 </html>

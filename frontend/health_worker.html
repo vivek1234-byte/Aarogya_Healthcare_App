@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ArogyaSaathi - Health Worker</title>
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FFFFFF">
-  <link rel="stylesheet" href="staff.css">
+  <link rel="stylesheet" href="app.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -32,51 +32,52 @@
           </svg>
           <div>
             <div class="brand-name">ArogyaSaathi</div>
-            <div class="brand-role">Health Worker</div>
+            <div class="brand-role" id="villageLabel">Health Worker</div>
           </div>
         </div>
 
         <nav class="nav-pills">
-          <button class="nav-pill active" data-tab="visits">Today's Visits <span class="nav-count hidden" id="visitsCount"></span></button>
+          <button class="nav-pill active" data-tab="patients">Patients <span class="nav-count hidden" id="priorityCount"></span></button>
           <button class="nav-pill" data-tab="triage">Voice Triage</button>
-          <button class="nav-pill" data-tab="register">Register Patient</button>
+          <button class="nav-pill" data-tab="register">Register</button>
+          <button class="nav-pill" data-tab="refer">Refer to Hospital</button>
+          <button class="nav-pill" data-tab="report">Daily Report</button>
         </nav>
 
         <div class="header-user">
           <div class="user-chip">
-            <div class="user-name">ASHA Worker</div>
-            <div class="user-id" data-staff-id></div>
+            <div class="user-name" data-user-name></div>
+            <div class="user-id">ASHA / ANM</div>
           </div>
           <div class="user-avatar">👩‍⚕️</div>
           <a href="index.html" class="btn-signout" data-signout>Sign Out</a>
         </div>
       </header>
 
-      <!-- ================= VIEW 1: TODAY'S VISITS (CHRONIC CARE) ================= -->
-      <section class="staff-view active" id="view-visits">
+      <!-- ================= VIEW 1: PATIENTS ================= -->
+      <section class="staff-view active" id="view-patients">
         <div class="view-head">
           <div>
-            <h1 class="view-title">Today's Home Visits</h1>
-            <p class="view-subtitle">Hypertension and diabetes patients ranked by deterioration risk from their BP, sugar and medicine check-ins.</p>
+            <h1 class="view-title">My Patients</h1>
+            <p class="view-subtitle">Ranked by risk from BP, sugar and medicine check-ins. Patients and you both add readings.</p>
           </div>
+          <button type="button" class="btn btn-primary" data-goto="register">＋ Register patient</button>
         </div>
 
         <div class="stat-row">
-          <div class="stat-tile"><div class="stat-label">Patients on follow-up</div><div class="stat-value" id="statPatients">–</div></div>
+          <div class="stat-tile"><div class="stat-label">Patients</div><div class="stat-value" id="statPatients">–</div></div>
           <div class="stat-tile"><div class="stat-label">Need priority visit</div><div class="stat-value red" id="statPriority">–</div><div class="stat-note">High or critical risk</div></div>
           <div class="stat-tile"><div class="stat-label">Missed doses (14 days)</div><div class="stat-value orange" id="statMissed">–</div></div>
-          <div class="stat-tile"><div class="stat-label">Next PHC visit in</div><div class="stat-value" id="statVisit">–</div><div class="stat-note">Flagged before the visit</div></div>
+          <div class="stat-tile"><div class="stat-label">Not yet activated</div><div class="stat-value" id="statPending">–</div><div class="stat-note">Give them their code</div></div>
         </div>
 
         <div class="grid-split">
           <div class="panel">
-            <div class="panel-title">Visit queue</div>
-            <div class="panel-sub">Highest risk first</div>
-            <div class="list" id="rosterList"><p class="empty-state">Loading patients…</p></div>
+            <input type="search" id="patientSearch" class="form-input" placeholder="Search name or mobile…" style="margin-bottom: 12px;">
+            <div class="list" id="patientList"><p class="empty-state">Loading…</p></div>
           </div>
-
           <div id="patientDetail">
-            <div class="panel"><p class="empty-state">Select a patient to see their trends.</p></div>
+            <div class="panel"><p class="empty-state">Select a patient.</p></div>
           </div>
         </div>
       </section>
@@ -86,131 +87,93 @@
         <div class="view-head">
           <div>
             <h1 class="view-title">Voice Triage</h1>
-            <p class="view-subtitle">Speak or type the patient's complaint in Hindi or English. Danger signs are checked by fixed safety rules first. The system never diagnoses or prescribes.</p>
+            <p class="view-subtitle">Choose the patient's language, then speak or type what they say. Danger signs are checked by fixed safety rules. The app never diagnoses or prescribes.</p>
           </div>
           <a href="tel:108" class="btn sos-btn">🚑 Call 108</a>
         </div>
 
         <div class="grid-split">
-          <!-- Patient setup -->
           <div class="panel" id="triageSetupPanel">
             <div class="panel-title">1. Patient</div>
-            <div class="panel-sub">Choose a registered patient or enter details.</div>
-
             <div class="form-group">
-              <label for="triagePatientSelect">Registered patient</label>
-              <select id="triagePatientSelect" class="form-select">
-                <option value="">New / walk-in patient</option>
+              <label for="triagePatient">Registered patient</label>
+              <select id="triagePatient" class="form-select">
+                <option value="">Walk-in (not registered)</option>
               </select>
             </div>
-
-            <div class="form-group">
-              <label for="triageName">Name</label>
-              <input id="triageName" class="form-input" placeholder="Patient name">
-            </div>
-            <div class="form-row">
+            <div class="form-row" id="walkinFields">
               <div class="form-group">
-                <label for="triageAge">Age (years)</label>
-                <input id="triageAge" class="form-input" type="number" min="0" max="120" placeholder="30">
+                <label for="walkAge">Age (years)</label>
+                <input id="walkAge" class="form-input" type="number" inputmode="numeric" min="0" max="120" placeholder="Age">
               </div>
               <div class="form-group">
-                <label for="triageGender">Gender</label>
-                <select id="triageGender" class="form-select">
+                <label for="walkGender">Gender</label>
+                <select id="walkGender" class="form-select">
                   <option value="F">Female</option>
                   <option value="M">Male</option>
                   <option value="O">Other</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label for="triageVillage">Village</label>
-                <select id="triageVillage" class="form-select"></select>
-              </div>
             </div>
-
             <div class="form-group">
               <label>Vitals (optional)</label>
               <div class="form-row">
-                <input id="vitalTemp" class="form-input" type="number" step="0.1" placeholder="Temp °F">
-                <input id="vitalSpo2" class="form-input" type="number" placeholder="SpO2 %">
-                <input id="vitalSys" class="form-input" type="number" placeholder="Systolic BP">
+                <input id="vitalTemp" class="form-input" type="number" inputmode="decimal" step="0.1" placeholder="Temp °F">
+                <input id="vitalSpo2" class="form-input" type="number" inputmode="numeric" placeholder="SpO2 %">
+                <input id="vitalSys" class="form-input" type="number" inputmode="numeric" placeholder="Upper BP">
               </div>
             </div>
-
             <div class="form-group">
-              <label>Language</label>
-              <div class="segmented" id="triageLang">
-                <button type="button" class="active" data-lang="hi">हिंदी</button>
-                <button type="button" data-lang="en">English</button>
-              </div>
+              <label>Patient's language</label>
+              <div class="lang-chips" id="triageLangs"></div>
             </div>
-
             <label class="consent-item">
               <input type="checkbox" id="triageConsent">
-              <div>
-                <strong>Patient gave voice consent</strong>
-                <span>Recording and data use explained in the patient's language.</span>
-              </div>
+              <div><strong>Patient gave voice consent</strong><span>Recording and data use explained in the patient's language.</span></div>
             </label>
-
             <button type="button" class="btn btn-primary btn-block" id="startTriageBtn" style="margin-top: 14px;">Start Triage</button>
           </div>
 
-          <!-- Conversation + decision -->
           <div>
-            <div class="panel" id="triageConversationPanel">
-              <div class="panel-title">2. Complaint &amp; guided questions <span class="badge badge-plain hidden" id="triageSessionBadge"></span></div>
+            <div class="panel">
+              <div class="panel-title">2. Complaint &amp; questions <span class="badge badge-plain hidden" id="triageSessionBadge"></span></div>
               <div class="panel-sub" id="triageConvSub">Start triage to begin.</div>
-
-              <div class="mic-zone">
-                <button type="button" class="mic-btn" id="micBtn" disabled aria-label="Speak">🎙️</button>
-                <div class="mic-hint" id="micHint">Tap the mic and let the patient speak</div>
-              </div>
-
-              <form class="speech-input-row" id="triageInputForm">
-                <input id="triageTextInput" class="form-input" placeholder="Or type what the patient says…" autocomplete="off" disabled>
-                <button type="submit" class="btn btn-primary" id="triageSendBtn" disabled>Send</button>
-              </form>
-
               <div class="conversation" id="conversation"></div>
+              <div class="quick-answers" id="quickAnswers"></div>
+              <form class="speech-input-row" id="triageForm">
+                <button type="button" class="mic-inline" id="triageMic" aria-label="Speak" disabled>🎙️</button>
+                <input id="triageText" class="form-input" placeholder="Speak or type the complaint…" autocomplete="off" disabled>
+                <button type="submit" class="btn btn-primary" id="triageSend" disabled>Send</button>
+              </form>
+              <div class="form-hint">Tap 🎙️ and let the patient speak; the words appear in the box so you can correct them before sending.</div>
             </div>
-
             <div class="panel hidden" id="decisionPanel"></div>
           </div>
         </div>
       </section>
 
-      <!-- ================= VIEW 3: REGISTER PATIENT ================= -->
+      <!-- ================= VIEW 3: REGISTER ================= -->
       <section class="staff-view" id="view-register">
         <div class="view-head">
           <div>
             <h1 class="view-title">Register Patient</h1>
-            <p class="view-subtitle">Read each consent aloud in the patient's language and tick it only after they agree. Name and phone are stored encrypted; staff see a pseudonym.</p>
+            <p class="view-subtitle">Read each consent aloud in the patient's language and tick it only after they agree. After registering, give the patient the 6-digit code so they can open the app on their phone.</p>
           </div>
         </div>
-
         <div class="grid-2">
           <form class="panel" id="registerForm">
-            <div class="panel-title">Patient details</div>
-            <div class="panel-sub">Registration channel</div>
-            <div class="form-group">
-              <div class="segmented" id="regChannel">
-                <button type="button" class="active" data-channel="HEALTH_WORKER">By health worker</button>
-                <button type="button" data-channel="MISSED_CALL">Missed-call callback</button>
-              </div>
-            </div>
-
             <div class="form-group">
               <label for="regName">Full name</label>
-              <input id="regName" class="form-input" required placeholder="e.g. Sita Devi">
+              <input id="regName" class="form-input" required placeholder="e.g. Sita Devi" autocomplete="off">
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label for="regPhone">Mobile number</label>
-                <input id="regPhone" class="form-input" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required placeholder="10 digits">
+                <label for="regMobile">Mobile number</label>
+                <input id="regMobile" class="form-input" type="tel" inputmode="numeric" maxlength="14" required placeholder="10 digits">
               </div>
               <div class="form-group">
                 <label for="regAge">Age</label>
-                <input id="regAge" class="form-input" type="number" min="0" max="120" required placeholder="Years">
+                <input id="regAge" class="form-input" type="number" inputmode="numeric" min="0" max="120" required placeholder="Years">
               </div>
               <div class="form-group">
                 <label for="regGender">Gender</label>
@@ -222,11 +185,27 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="regVillage">Village</label>
-              <select id="regVillage" class="form-select"></select>
+              <label>Conditions to follow up</label>
+              <div class="check-chips" id="regConditions"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="regLanguage">Preferred language</label>
+                <select id="regLanguage" class="form-select">
+                  <option value="hi">हिंदी Hindi</option>
+                  <option value="en">English</option>
+                  <option value="bn">বাংলা Bengali</option>
+                  <option value="mr">मराठी Marathi</option>
+                  <option value="te">తెలుగు Telugu</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="regNextVisit">Next PHC visit (optional)</label>
+                <input id="regNextVisit" class="form-input" type="date">
+              </div>
             </div>
 
-            <div class="panel-title" style="margin-top: 8px;">Voice consent</div>
+            <div class="panel-title" style="margin-top: 6px;">Voice consent</div>
             <div class="consent-list">
               <label class="consent-item">
                 <input type="checkbox" id="consentData">
@@ -234,21 +213,135 @@
               </label>
               <label class="consent-item">
                 <input type="checkbox" id="consentShare">
-                <div><strong>Sharing with PHC doctor</strong><span>Referral summaries can be shared with the doctor at the PHC or telemedicine hub.</span></div>
+                <div><strong>Sharing with PHC doctor and hospital</strong><span>Referral summaries can be shared with the doctor and the hospital they are referred to.</span></div>
               </label>
               <label class="consent-item">
                 <input type="checkbox" id="consentDelete">
                 <div><strong>Right to deletion explained</strong><span>The patient knows they can ask for their data to be deleted at any time.</span></div>
               </label>
             </div>
-
             <button type="submit" class="btn btn-green btn-block">Register with Consent</button>
           </form>
 
           <div class="panel" id="registerResult">
-            <div class="panel-title">Registered patients (this session)</div>
-            <div class="panel-sub">Only the pseudonymised ID is shown after registration.</div>
-            <div class="list" id="registeredList"><p class="empty-state">No patients registered yet.</p></div>
+            <div class="panel-title">How patients get into the app</div>
+            <ol class="steps-list">
+              <li>Register the patient here with their own mobile number.</li>
+              <li>You get a 6-digit code. Tell or write it for the patient (valid 3 days).</li>
+              <li>On their phone, the patient opens ArogyaSaathi → <em>First time? Activate account</em>, enters mobile + code and makes a password.</li>
+              <li>Lost the code? Open the patient in <em>Patients</em> and tap <em>New code</em>.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 4: REFER TO GOVERNMENT HOSPITAL ================= -->
+      <section class="staff-view" id="view-refer">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title">Refer to Government Hospital</h1>
+            <p class="view-subtitle">Find the nearest government facilities (PHC, CHC, district hospital) from OpenStreetMap, then send the patient with a referral slip.</p>
+          </div>
+        </div>
+        <div class="grid-split">
+          <div class="panel">
+            <div class="panel-title">1. Patient</div>
+            <div class="form-group">
+              <select id="referPatient" class="form-select"></select>
+              <div class="form-hint" id="referEncounterNote"></div>
+            </div>
+            <div class="form-row two-col">
+              <div class="form-group">
+                <label for="referUrgency">How soon</label>
+                <select id="referUrgency" class="form-select">
+                  <option value="EMERGENCY">Emergency – now</option>
+                  <option value="SAME_DAY" selected>Today</option>
+                  <option value="WITHIN_WEEK">Within a week</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="referRadius">Search within</label>
+                <select id="referRadius" class="form-select">
+                  <option value="10">10 km</option>
+                  <option value="25" selected>25 km</option>
+                  <option value="50">50 km</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="referReason">Reason for referral</label>
+              <textarea id="referReason" class="form-textarea" placeholder="e.g. Fever for 4 days, needs malaria test"></textarea>
+            </div>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="findHereBtn">📍 Near me (GPS)</button>
+              <button type="button" class="btn btn-ghost" id="findVillageBtn">🏘️ Near my village</button>
+            </div>
+            <div class="form-hint" id="hospitalStatus"></div>
+          </div>
+
+          <div>
+            <div class="panel">
+              <div class="panel-title">2. Choose a government facility</div>
+              <div class="list" id="hospitalList"><p class="empty-state">Search to see nearby government facilities.</p></div>
+              <details class="manual-hospital">
+                <summary>Hospital not listed? Enter it yourself</summary>
+                <div class="form-group"><input id="manName" class="form-input" placeholder="Hospital name"></div>
+                <div class="form-group"><input id="manAddress" class="form-input" placeholder="Address"></div>
+                <div class="form-group"><input id="manPhone" class="form-input" type="tel" placeholder="Phone"></div>
+                <button type="button" class="btn btn-ghost" id="manUseBtn">Use this hospital</button>
+              </details>
+            </div>
+            <div class="panel hidden" id="referSlip"></div>
+            <div class="panel">
+              <div class="panel-title">Recent referrals</div>
+              <div class="list" id="referralHistory"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 5: DAILY SURVEILLANCE REPORT ================= -->
+      <section class="staff-view" id="view-report">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title">Daily Village Report</h1>
+            <p class="view-subtitle">Ask the local chemist and the school each day. With clinic visits from triage, these counts give early warning of outbreaks.</p>
+          </div>
+        </div>
+        <div class="grid-2">
+          <form class="panel" id="signalForm">
+            <div class="form-group">
+              <label for="sigDate">Date</label>
+              <input id="sigDate" class="form-input" type="date" required>
+            </div>
+            <div class="form-row two-col">
+              <div class="form-group">
+                <label for="sigOrs">ORS packets sold (chemist)</label>
+                <input id="sigOrs" class="form-input" type="number" inputmode="numeric" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label for="sigFever">Fever medicine sold (chemist)</label>
+                <input id="sigFever" class="form-input" type="number" inputmode="numeric" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label for="sigAbsent">Students absent (school)</label>
+                <input id="sigAbsent" class="form-input" type="number" inputmode="numeric" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label for="sigEnrolled">Students enrolled</label>
+                <input id="sigEnrolled" class="form-input" type="number" inputmode="numeric" min="0" placeholder="0">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Submit report</button>
+          </form>
+          <div class="panel">
+            <div class="panel-title">Last 14 days</div>
+            <div class="audit-table-wrap">
+              <table class="audit-table" style="min-width: 0;">
+                <thead><tr><th>Date</th><th>ORS</th><th>Fever med.</th><th>Absent</th></tr></thead>
+                <tbody id="signalHistory"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -258,7 +351,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="staff.js"></script>
+  <script src="app.js"></script>
   <script src="health_worker.js"></script>
 </body>
 </html>

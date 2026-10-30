@@ -1,7 +1,7 @@
 import io
 import os
 import uuid
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 from app.core.config import settings
 
 # Attempt import of minio, fallback to local file store if minio is unavailable or mock

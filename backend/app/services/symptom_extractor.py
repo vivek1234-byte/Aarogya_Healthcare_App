@@ -1,6 +1,10 @@
 import re
 from typing import List, Dict, Optional, Tuple
 from app.core.base_schema import BaseModel
+from app.services.triage_i18n import (
+    DAY_WORDS, EXTRA_CLAUSE_DELIMITERS, NUMBER_WORDS, EXTRA_LEXICON, EXTRA_NEGATION_PATTERNS,
+    normalize_digits, phrase_contains_negation,
+)
 
 
 class ExtractedClinicalInfo(BaseModel):
@@ -82,6 +86,11 @@ SYMPTOM_LEXICON = {
 }
 
 
+# Bengali, Marathi, Telugu and romanised Hindi phrases map to the same clinical codes
+for _code, _phrases in EXTRA_LEXICON.items():
+    SYMPTOM_LEXICON.setdefault(_code, []).extend(_phrases)
+
+
 def check_negation(text: str, keyword: str) -> bool:
     """
     Checks if a clinical symptom is negated in Hindi ('नहीं', 'ना', 'कोई ... नहीं')
@@ -91,7 +100,7 @@ def check_negation(text: str, keyword: str) -> bool:
     if idx == -1:
         return False
 
-    clause_delimiters = [',', ';', '।', '.', ' और ', ' तथा ', ' लेकिन ', ' किन्तु ', ' and ', ' but ']
+    clause_delimiters = [',', ';', '।', '.', ' और ', ' तथा ', ' लेकिन ', ' किन्तु ', ' and ', ' but '] + EXTRA_CLAUSE_DELIMITERS
     
     # Left bound of the clause
     left_bound = 0
@@ -118,7 +127,7 @@ def check_negation(text: str, keyword: str) -> bool:
         r'\bwithout\b',
         r'\bdenies\b',
         r'\bnever\b'
-    ]
+    ] + EXTRA_NEGATION_PATTERNS
     for pat in negation_patterns:
         if re.search(pat, clause):
             return True
@@ -127,17 +136,18 @@ def check_negation(text: str, keyword: str) -> bool:
 
 def extract_duration_days(text: str) -> Optional[int]:
     """Extracts duration in days from vernacular phrases."""
-    text_lower = text.lower()
-    
-    match_digit = re.search(r'(\d+)\s*(दिन|days?|day|रोज़)', text_lower)
+    text_lower = normalize_digits(text.lower())
+
+    match_digit = re.search(r'(\d+)\s*' + DAY_WORDS, text_lower)
     if match_digit:
         return int(match_digit.group(1))
 
     hindi_numbers = {
         "एक": 1, "दो": 2, "तीन": 3, "चार": 4, "पांच": 5, "छह": 6, "सात": 7, "हफ्ते": 7
     }
+    hindi_numbers.update(NUMBER_WORDS)
     for word, val in hindi_numbers.items():
-        if f"{word} दिन" in text_lower or f"{word} days" in text_lower or f"{word} रोज़" in text_lower:
+        if re.search(re.escape(word) + r'\s*' + DAY_WORDS, text_lower):
             return val
 
     if "आज से" in text_lower or "today" in text_lower:
@@ -153,7 +163,7 @@ def extract_clinical_symptoms(transcript: str, language: str = "hi") -> Extracte
     Parses unstructured multilingual speech transcription into standardized clinical symptom codes.
     Applies clause-level clinical negation detection to discard symptoms explicitly denied.
     """
-    cleaned_text = transcript.strip().lower()
+    cleaned_text = normalize_digits(transcript.strip().lower())
     identified_symptoms: List[str] = []
     danger_signs: List[str] = []
 
@@ -166,7 +176,9 @@ def extract_clinical_symptoms(transcript: str, language: str = "hi") -> Extracte
     for symptom_code, synonyms in SYMPTOM_LEXICON.items():
         for syn in synonyms:
             if syn in cleaned_text:
-                if symptom_code != "cannot_drink_or_breastfeed" and check_negation(cleaned_text, syn):
+                # Phrases that themselves contain a negation word ("ఊపిరి ఆడటం లేదు") are positive findings
+                if symptom_code != "cannot_drink_or_breastfeed" and not phrase_contains_negation(syn) \
+                        and check_negation(cleaned_text, syn):
                     continue
 
                 if symptom_code not in identified_symptoms:
@@ -185,7 +197,8 @@ def extract_clinical_symptoms(transcript: str, language: str = "hi") -> Extracte
 
     # Sweating
     if "sweating" not in identified_symptoms:
-        if ("पसीना" in cleaned_text or "sweat" in cleaned_text) and not check_negation(cleaned_text, "पसीना"):
+        if ("पसीना" in cleaned_text or "sweat" in cleaned_text) and \
+                not (check_negation(cleaned_text, "पसीना") or check_negation(cleaned_text, "sweat")):
             identified_symptoms.append("sweating")
 
     # Radiating arm/jaw pain

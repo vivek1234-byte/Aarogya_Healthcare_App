@@ -1,6 +1,6 @@
 import random
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Optional, Tuple
 from app.services.surveillance_engine import surveillance_engine, AnomalyResult, OutbreakAlertPayload
 from app.services.geo_clustering import VILLAGE_GEOMETRIES
 

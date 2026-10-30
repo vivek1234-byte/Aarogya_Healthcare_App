@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ArogyaSaathi - Health Officer</title>
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FFFFFF">
-  <link rel="stylesheet" href="staff.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="app.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -44,8 +45,8 @@
 
         <div class="header-user">
           <div class="user-chip">
-            <div class="user-name">Health Officer</div>
-            <div class="user-id" data-staff-id></div>
+            <div class="user-name" data-user-name></div>
+            <div class="user-id">Health Officer</div>
           </div>
           <div class="user-avatar">👮</div>
           <a href="index.html" class="btn-signout" data-signout>Sign Out</a>
@@ -56,32 +57,32 @@
       <section class="staff-view active" id="view-map">
         <div class="view-head">
           <div>
-            <h1 class="view-title" id="blockTitle">Block Outbreak Early Warning</h1>
-            <p class="view-subtitle">Clinic visits, pharmacy sales and school absenteeism are combined per village. Alerts are raised when several villages show unusual rises together.</p>
+            <h1 class="view-title">Outbreak Early Warning</h1>
+            <p class="view-subtitle">Each village combines clinic cases from voice triage with the ASHA's daily chemist and school counts. Alerts are raised when nearby villages rise together. Each village needs <span id="baselineDays">7</span> days of reports before scoring starts.</p>
           </div>
+          <button type="button" class="btn btn-ghost" id="refreshBtn">↻ Refresh</button>
         </div>
 
         <div class="stat-row">
-          <div class="stat-tile"><div class="stat-label">Villages monitored</div><div class="stat-value" id="statVillages">–</div></div>
+          <div class="stat-tile"><div class="stat-label">Villages</div><div class="stat-value" id="statVillages">–</div></div>
           <div class="stat-tile"><div class="stat-label">Active alerts</div><div class="stat-value red" id="statAlerts">–</div></div>
-          <div class="stat-tile"><div class="stat-label">Earlier than clinic-only</div><div class="stat-value green" id="statLead">–</div><div class="stat-note">Target ≥ 3 days</div></div>
-          <div class="stat-tile"><div class="stat-label">False alarms / month</div><div class="stat-value" id="statFalse">–</div><div class="stat-note">Target ≤ 1 per block</div></div>
+          <div class="stat-tile"><div class="stat-label">Reported today</div><div class="stat-value green" id="statReporting">–</div><div class="stat-note">ASHA daily reports</div></div>
+          <div class="stat-tile"><div class="stat-label">Scoring ready</div><div class="stat-value" id="statBaseline">–</div><div class="stat-note">Villages with enough history</div></div>
         </div>
 
         <div class="grid-split-wide">
           <div class="panel">
             <div class="panel-title">Village map</div>
-            <div class="panel-sub">Tap a village to see its signals.</div>
-            <div class="map-box" id="villageMap"></div>
+            <div class="panel-sub">Tap a village to see its signals. Villages without GPS are listed in the Signals tab.</div>
+            <div class="leaflet-map" id="villageMap"></div>
             <div class="chart-legend">
-              <span><span class="legend-dot" style="background:#FCA5A5"></span>Outbreak</span>
-              <span><span class="legend-dot" style="background:#FDBA74"></span>Warning</span>
-              <span><span class="legend-dot" style="background:#FDE68A"></span>Watch</span>
-              <span><span class="legend-dot" style="background:#A7F3D0"></span>Normal</span>
-              <span><span class="legend-dot" style="background:transparent;border:2px dashed #DC2626"></span>Alert cluster</span>
+              <span><span class="legend-dot" style="background:#EF4444"></span>Outbreak</span>
+              <span><span class="legend-dot" style="background:#F97316"></span>Warning</span>
+              <span><span class="legend-dot" style="background:#F59E0B"></span>Watch</span>
+              <span><span class="legend-dot" style="background:#10B981"></span>Normal</span>
+              <span><span class="legend-dot" style="background:#94A3B8"></span>Collecting data</span>
             </div>
           </div>
-
           <div id="alertPanel">
             <div class="panel"><p class="empty-state">Loading alerts…</p></div>
           </div>
@@ -93,22 +94,20 @@
         <div class="view-head">
           <div>
             <h1 class="view-title">Syndromic Signals</h1>
-            <p class="view-subtitle">Daily counts for the last 30 days. Pharmacy sales and absenteeism usually rise before clinic visits.</p>
+            <p class="view-subtitle">Daily counts for the last 30 days. Chemist sales and school absence usually rise before clinic visits.</p>
           </div>
           <select id="signalVillage" class="form-select" style="max-width: 260px;"></select>
         </div>
-
         <div class="panel">
           <div class="panel-title" id="signalTitle">Village signals</div>
           <div class="panel-sub" id="signalSub"></div>
           <div class="chart-box" id="signalChart"></div>
         </div>
-
         <div class="panel">
           <div class="panel-title">All villages today</div>
           <div class="audit-table-wrap" style="margin-top: 10px;">
-            <table class="audit-table" style="min-width: 560px;">
-              <thead><tr><th>Village</th><th>Status</th><th>Anomaly score (z)</th><th>Clinic</th><th>Pharmacy ORS</th><th>Absent</th></tr></thead>
+            <table class="audit-table" style="min-width: 640px;">
+              <thead><tr><th>Village</th><th>Status</th><th>Fever (z)</th><th>Diarrhoea (z)</th><th>History days</th><th>Reported today</th></tr></thead>
               <tbody id="villageTable"></tbody>
             </table>
           </div>
@@ -120,7 +119,7 @@
         <div class="view-head">
           <div>
             <h1 class="view-title">Audit Trail</h1>
-            <p class="view-subtitle">Alerts raised, acknowledgements and every logged decision across the block.</p>
+            <p class="view-subtitle">Every input, rule fired, alert, acknowledgement and human override.</p>
           </div>
           <button type="button" class="btn btn-ghost" id="refreshAuditBtn">↻ Refresh</button>
         </div>
@@ -138,7 +137,8 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="staff.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="app.js"></script>
   <script src="officer.js"></script>
 </body>
 </html>

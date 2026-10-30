@@ -1,6 +1,6 @@
 import random
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Optional, Tuple
 from app.services.chronic_care import chronic_care_engine, DeteriorationRisk
 
 

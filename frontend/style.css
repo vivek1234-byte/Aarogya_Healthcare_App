@@ -370,3 +370,55 @@ body {
     transform: translateY(0);
   }
 }
+
+/* ================= AUTH FORMS (login / activation / staff sign-up) ================= */
+.roles-grid { margin-bottom: 14px; }
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--primary-green);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 0;
+  cursor: pointer;
+  text-align: center;
+}
+.form-note {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.form-error {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.field-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 2px 0 6px 4px;
+}
+.input-field.plain,
+.select-field { padding-left: 14px; padding-right: 14px; }
+.select-field { appearance: auto; }
+.new-village { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.new-village .gps-btn,
+.new-village .form-note { grid-column: 1 / -1; }
+.gps-btn {
+  border: 1px dashed var(--primary-green);
+  background: var(--primary-green-light);
+  color: var(--primary-green);
+  border-radius: 14px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-submit:disabled { opacity: 0.6; cursor: wait; }

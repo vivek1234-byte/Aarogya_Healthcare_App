@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ArogyaSaathi - Login</title>
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -13,133 +13,144 @@
 </head>
 <body>
 
-  <!-- Mobile Device Frame Container -->
   <div class="device-container">
-    
-    <!-- 1. Seamless Top Hero Artwork -->
-    <!-- Displays Status Bar, Leaves, Heart Pulse Logo, Title, Subtitle, Quote, and Village Scenery -->
+
     <div class="hero-artwork">
-      <img src="assets/exact_top_hero.jpg" alt="ArogyaSaathi Healthcare Scenery">
+      <img src="assets/login_hero.jpg" alt="ArogyaSaathi">
     </div>
 
-    <!-- 2. Bottom Floating White Login Card -->
     <div class="login-card">
-      
-      <!-- Welcome Header -->
+
       <div class="login-header">
-        <h2>Welcome Back</h2>
-        <p>Log in to continue</p>
+        <h2 id="formTitle">Welcome · स्वागत है</h2>
+        <p id="formSubtitle">Log in to continue · लॉग इन करें</p>
       </div>
 
-      <!-- Upper Toggle Pills: [ 👤 Patient / Family ]  [ 🧑‍⚕️ Other Login ] -->
-      <div class="toggle-pills">
+      <!-- Who is logging in -->
+      <div class="toggle-pills" id="audiencePills">
         <button type="button" id="pillPatient" class="pill-btn active">
           <span class="pill-icon">👤</span>
-          <span>Patient / Family</span>
+          <span>Patient · मरीज़</span>
         </button>
-        <button type="button" id="pillOther" class="pill-btn">
+        <button type="button" id="pillStaff" class="pill-btn">
           <span class="pill-icon">🧑‍⚕️</span>
-          <span>Other Login</span>
+          <span>Health Staff</span>
         </button>
       </div>
 
-      <!-- Login Form -->
+      <!-- Staff role -->
+      <div id="staffRoles" class="roles-grid hidden">
+        <button type="button" class="role-btn active" data-role="HEALTH_WORKER">
+          <span class="role-icon">👩‍⚕️</span>
+          <span class="role-label">ASHA / ANM</span>
+        </button>
+        <button type="button" class="role-btn" data-role="DOCTOR">
+          <span class="role-icon">🩺</span>
+          <span class="role-label">Doctor</span>
+        </button>
+        <button type="button" class="role-btn" data-role="HEALTH_OFFICER">
+          <span class="role-icon">👮</span>
+          <span class="role-label">Health Officer</span>
+        </button>
+      </div>
+
+      <div class="form-error hidden" id="formError" role="alert"></div>
+
+      <!-- ===== LOGIN ===== -->
       <form id="loginForm" class="login-form">
-        
-        <!-- Mobile Number / Worker ID Input -->
         <div class="input-group">
           <span class="input-icon">📞</span>
-          <input 
-            type="text" 
-            id="inputMobile" 
-            class="input-field" 
-            value="9876543210" 
-            placeholder="Mobile Number" 
-            required
-          >
+          <input type="tel" id="loginMobile" class="input-field" inputmode="numeric" maxlength="14"
+                 placeholder="Mobile number · मोबाइल नंबर" autocomplete="tel" required>
         </div>
-
-        <!-- Password Input -->
         <div class="input-group">
           <span class="input-icon">🔒</span>
-          <input 
-            type="password" 
-            id="inputPassword" 
-            class="input-field" 
-            value="1234" 
-            placeholder="Password" 
-            required
-          >
-          <button type="button" id="toggleEye" class="toggle-eye" aria-label="Toggle password visibility">
-            👁️‍🗨️
-          </button>
+          <input type="password" id="loginPassword" class="input-field" placeholder="Password · पासवर्ड"
+                 autocomplete="current-password" required>
+          <button type="button" class="toggle-eye" data-eye="loginPassword" aria-label="Show password">👁️</button>
         </div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="btn-submit">
-          <span>Log In</span>
-          <span>➔</span>
-        </button>
-
+        <button type="submit" class="btn-submit"><span>Log In · लॉग इन</span><span>➔</span></button>
+        <button type="button" class="link-btn" id="toActivate">First time? Activate account · पहली बार? खाता चालू करें</button>
+        <button type="button" class="link-btn hidden" id="toSignup">New staff member? Create account</button>
       </form>
 
-      <!-- 3. Conditional "OR Login as" Role Selector Section -->
-      <!-- Only visible when "Other Login" is clicked; hidden for "Patient / Family" -->
-      <div id="otherLoginSection" class="other-login-section hidden">
-        
-        <!-- Divider -->
-        <div class="divider">
-          <span>OR</span>
+      <!-- ===== PATIENT ACTIVATION ===== -->
+      <form id="activateForm" class="login-form hidden">
+        <p class="form-note">Your ASHA worker registered you and gave you a 6-digit code. Enter it and choose your own password.<br>
+          आपकी आशा कार्यकर्ता ने आपको 6 अंकों का कोड दिया है। कोड डालें और अपना पासवर्ड बनाएं।</p>
+        <div class="input-group">
+          <span class="input-icon">📞</span>
+          <input type="tel" id="actMobile" class="input-field" inputmode="numeric" maxlength="14"
+                 placeholder="Mobile number · मोबाइल नंबर" required>
         </div>
-        <p class="login-as-subtitle">Login as</p>
+        <div class="input-group">
+          <span class="input-icon">🔑</span>
+          <input type="text" id="actCode" class="input-field" inputmode="numeric" maxlength="6" pattern="\d{6}"
+                 placeholder="6-digit code from ASHA · आशा से मिला कोड" autocomplete="one-time-code" required>
+        </div>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="actPassword" class="input-field" minlength="6"
+                 placeholder="New password (6+ letters) · नया पासवर्ड" autocomplete="new-password" required>
+          <button type="button" class="toggle-eye" data-eye="actPassword" aria-label="Show password">👁️</button>
+        </div>
+        <button type="submit" class="btn-submit"><span>Activate · चालू करें</span><span>➔</span></button>
+        <button type="button" class="link-btn" data-back>← Back to login · वापस</button>
+      </form>
 
-        <!-- 3 Role Options: Health Worker, Doctor, Health Officer -->
-        <div class="roles-grid">
-          
-          <!-- Health Worker (Default Selected in Other Login) -->
-          <button 
-            type="button" 
-            class="role-btn active" 
-            data-role="Health Worker" 
-            data-id="ASHA-RAMPUR-7821"
-          >
-            <span class="role-icon">👩‍⚕️</span>
-            <span class="role-label">Health Worker</span>
-          </button>
-
-          <!-- Doctor -->
-          <button 
-            type="button" 
-            class="role-btn" 
-            data-role="Doctor" 
-            data-id="DR-VERMA-PHC-402"
-          >
-            <span class="role-icon">🩺</span>
-            <span class="role-label">Doctor</span>
-          </button>
-
-          <!-- Health Officer -->
-          <button 
-            type="button" 
-            class="role-btn" 
-            data-role="Health Officer" 
-            data-id="OFFICER-DIST-881"
-          >
-            <span class="role-icon">👮</span>
-            <span class="role-label">Health Officer</span>
-          </button>
-
+      <!-- ===== STAFF SIGN-UP ===== -->
+      <form id="signupForm" class="login-form hidden">
+        <p class="form-note">Ask your block administrator for the staff access code.</p>
+        <div class="input-group">
+          <span class="input-icon">🪪</span>
+          <input type="text" id="suName" class="input-field" placeholder="Full name" autocomplete="name" required>
+        </div>
+        <div class="input-group">
+          <span class="input-icon">📞</span>
+          <input type="tel" id="suMobile" class="input-field" inputmode="numeric" maxlength="14"
+                 placeholder="Mobile number" autocomplete="tel" required>
+        </div>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="suPassword" class="input-field" minlength="6"
+                 placeholder="Password (6+ characters)" autocomplete="new-password" required>
+          <button type="button" class="toggle-eye" data-eye="suPassword" aria-label="Show password">👁️</button>
         </div>
 
-        <!-- Bottom Leaf Accent -->
-        <div class="leaf-accent">
-          <span class="leaf-icon">🍃</span>
+        <!-- ASHA: village -->
+        <div id="suVillageBlock">
+          <label class="field-label" for="suVillageSelect">Your village</label>
+          <select id="suVillageSelect" class="input-field select-field">
+            <option value="__new">+ Add my village</option>
+          </select>
+          <div id="suNewVillage" class="new-village">
+            <input type="text" id="suVillageName" class="input-field plain" placeholder="Village name">
+            <input type="text" id="suBlock" class="input-field plain" placeholder="Block">
+            <input type="text" id="suDistrict" class="input-field plain" placeholder="District">
+            <input type="text" id="suState" class="input-field plain" placeholder="State">
+            <button type="button" class="gps-btn" id="suGpsBtn">📍 Use my current location for the village</button>
+            <div class="form-note" id="suGpsStatus">Location helps find nearby government hospitals and plot outbreaks on the map.</div>
+          </div>
         </div>
 
+        <!-- Doctor: facility -->
+        <div class="input-group hidden" id="suFacilityBlock">
+          <span class="input-icon">🏥</span>
+          <input type="text" id="suFacility" class="input-field" placeholder="PHC / hospital name">
+        </div>
+
+        <div class="input-group">
+          <span class="input-icon">🔑</span>
+          <input type="text" id="suCode" class="input-field" placeholder="Staff access code" autocomplete="off" required>
+        </div>
+        <button type="submit" class="btn-submit"><span>Create account</span><span>➔</span></button>
+        <button type="button" class="link-btn" data-back>← Back to login</button>
+      </form>
+
+      <div class="leaf-accent">
+        <span class="leaf-icon">🍃</span>
       </div>
-
     </div>
-
   </div>
 
   <script src="script.js"></script>

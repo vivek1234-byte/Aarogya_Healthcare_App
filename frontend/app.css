@@ -1,6 +1,6 @@
 /* =========================================================
-   AROGYASAATHI STAFF PORTALS - Health Worker, Doctor, Health Officer
-   Shares the visual language of the patient dashboard (dashboard.css)
+   AROGYASAATHI APP STYLES
+   Shared design system for the patient, ASHA, doctor and officer pages
    ========================================================= */
 
 :root {
@@ -382,4 +382,49 @@ button.list-item:hover { border-color: #CBD5E1; }
   .panel { padding: 16px; border-radius: 20px; }
   .stat-row { gap: 10px; }
   .stat-value { font-size: 22px; }
+}
+
+/* ================= LANGUAGE CHIPS & VOICE ================= */
+.lang-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.lang-chip {
+  border: 1px solid var(--border-card); background: #FFFFFF; color: var(--text-secondary);
+  border-radius: 999px; padding: 7px 13px; font-size: 13.5px; font-weight: 700; min-height: 36px;
+}
+.lang-chip.active { background: var(--text-primary); color: #FFFFFF; border-color: var(--text-primary); }
+.mic-inline {
+  width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; border: none; font-size: 20px;
+  background: linear-gradient(135deg, #06B6D4, #3B82F6); color: #FFFFFF;
+}
+.mic-inline.recording, .mic-btn.recording { background: linear-gradient(135deg, #F87171, #EF4444); animation: pulse 1.2s infinite; }
+.btn-call { text-decoration: none; }
+.btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 11px; }
+.form-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.lvl-NO_DATA, .lvl-NO_BASELINE { background: var(--panel-bg); color: var(--text-secondary); }
+.lvl-SAME_DAY { background: var(--orange-soft); color: #C2410C; }
+.lvl-WITHIN_WEEK, .lvl-REFERRED { background: var(--blue-soft); color: #1D4ED8; }
+.code-box {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 30px; font-weight: 800;
+  letter-spacing: 6px; text-align: center; background: var(--panel-bg); border: 2px dashed var(--border-card);
+  border-radius: 16px; padding: 14px; margin: 10px 0;
+}
+.chip-check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.chip-check input { accent-color: var(--green-primary); }
+.check-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.check-chips label {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border-card); border-radius: 999px;
+  padding: 7px 12px; font-size: 13px; font-weight: 600; background: var(--panel-bg); cursor: pointer;
+}
+.check-chips input { accent-color: var(--green-primary); }
+.hospital-item .list-meta a { color: var(--blue-primary); }
+.leaflet-map { height: 420px; border-radius: 20px; border: 1px solid var(--border-card); overflow: hidden; z-index: 0; }
+@media (max-width: 768px) { .leaflet-map { height: 320px; } }
+.steps-list { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.5; color: var(--text-secondary); }
+.manual-hospital { margin-top: 14px; }
+.manual-hospital summary { cursor: pointer; font-weight: 700; font-size: 13.5px; color: var(--blue-primary); margin-bottom: 10px; }
+.form-row.two-col { grid-template-columns: 1fr 1fr; }
+.quick-answers .btn { font-size: 13px; }
+@media (max-width: 768px), (display-mode: standalone) {
+  .form-row.two-col { grid-template-columns: 1fr 1fr; }
+  .staff-header .header-user .user-avatar { display: none; }
+  .btn-signout { padding: 8px 12px; }
 }

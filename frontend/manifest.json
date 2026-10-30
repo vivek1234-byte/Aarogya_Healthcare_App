@@ -1,23 +1,23 @@
 {
-  "name": "Meditek Patient Healthcare",
-  "short_name": "Meditek",
+  "name": "ArogyaSaathi",
+  "short_name": "ArogyaSaathi",
   "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#E5F3EC",
   "theme_color": "#E5F3EC",
-  "description": "Meditek Real-time Patient Health & Vitals Dashboard",
+  "description": "ArogyaSaathi: voice triage, chronic care follow-up and outbreak early warning for patients, ASHA workers, doctors and health officers",
   "icons": [
     {
-      "src": "assets/melina_avatar.jpg",
+      "src": "assets/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/melina_avatar.jpg",
+      "src": "assets/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
