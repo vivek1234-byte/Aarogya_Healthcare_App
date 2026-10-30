@@ -21,6 +21,7 @@ if backend_dir not in sys.path:
 from app.services.symptom_extractor import extract_clinical_symptoms
 from app.services.voice_checkin import VoiceCheckinParser
 from app.core.security import generate_pseudonym, encrypt_pii
+from app import staff_portal
 
 voice_parser = VoiceCheckinParser()
 
@@ -136,6 +137,112 @@ MELINA_PATIENT_DATA = {
     }
 }
 
+MELINA_REPORTS = [
+    {
+        'id': 'REP-2026-001',
+        'title': 'Comprehensive Metabolic & Lipid Profile',
+        'category': 'Pathology',
+        'doctor_name': 'Dr. Arvind Sharma',
+        'doctor_title': 'MD, Senior Consultant Physician',
+        'hospital': 'District Memorial Hospital',
+        'date': '29 Oct 2026',
+        'time': '11:30 AM',
+        'status': 'Verified & Stable',
+        'status_type': 'success',
+        'summary': 'Fasting blood glucose (95 mg/dL), Total Cholesterol (172 mg/dL), and Triglycerides (130 mg/dL) are within optimal physiological thresholds. Liver and kidney function normal.',
+        'attachment_name': 'Metabolic_Panel_Melina_Oct2026.pdf',
+        'is_new': False
+    },
+    {
+        'id': 'REP-2026-002',
+        'title': 'Electrocardiogram (ECG) 12-Lead Rhythm Report',
+        'category': 'Cardiology',
+        'doctor_name': 'Dr. Priya Mehta',
+        'doctor_title': 'DM, Interventional Cardiologist',
+        'hospital': 'City Heart & Vascular Institute',
+        'date': '24 Oct 2026',
+        'time': '04:15 PM',
+        'status': 'Normal Sinus Rhythm',
+        'status_type': 'normal',
+        'summary': 'Resting heart rate 80 bpm with regular sinus pattern. Normal PR interval (152 ms) and QTc interval (412 ms). No signs of ischemia or arrhythmia.',
+        'attachment_name': 'ECG_Report_Melina_Oct24.pdf',
+        'is_new': False
+    }
+]
+
+MELINA_VITALS_HISTORY = [
+    {
+        'date': 'Today, 30 Oct',
+        'time': '10:45 AM',
+        'type': 'Blood Pressure',
+        'value': '118/80 mmHg',
+        'status': 'Normal',
+        'status_type': 'success',
+        'source': 'Home Omron Monitor',
+        'note': 'Resting reading after 15 min rest'
+    },
+    {
+        'date': 'Today, 30 Oct',
+        'time': '10:00 AM',
+        'type': 'Heart Rate',
+        'value': '88 Bpm',
+        'status': 'Resting',
+        'status_type': 'neutral',
+        'source': 'Smart Health Band',
+        'note': 'Average resting pulse during morning desk work'
+    },
+    {
+        'date': 'Today, 30 Oct',
+        'time': '08:30 AM',
+        'type': 'Blood Sugar',
+        'value': '95 mg/dL',
+        'status': 'Healthy (Fasting)',
+        'status_type': 'success',
+        'source': 'Accu-Chek Glucometer',
+        'note': 'Fasting glucose level before breakfast'
+    },
+    {
+        'date': 'Yesterday, 29 Oct',
+        'time': '06:15 PM',
+        'type': 'SpO2 Saturation',
+        'value': '98%',
+        'status': 'Optimal',
+        'status_type': 'success',
+        'source': 'Pulse Oximeter',
+        'note': 'Post-evening walk reading'
+    },
+    {
+        'date': 'Yesterday, 29 Oct',
+        'time': '02:00 PM',
+        'type': 'Blood Pressure',
+        'value': '120/80 mmHg',
+        'status': 'Normal',
+        'status_type': 'success',
+        'source': 'Clinical Checkup',
+        'note': 'Routine measurement by ASHA Worker'
+    },
+    {
+        'date': '27 Oct 2026',
+        'time': '09:00 AM',
+        'type': 'Body Mass Index (BMI)',
+        'value': '22.4 kg/m²',
+        'status': 'Optimal / Normal Weight',
+        'status_type': 'success',
+        'source': 'Health Kiosk',
+        'note': 'Height: 165 cm, Weight: 61.0 kg'
+    },
+    {
+        'date': '24 Oct 2026',
+        'time': '04:30 PM',
+        'type': 'Heart Rate (ECG)',
+        'value': '80 Bpm',
+        'status': 'Resting Normal',
+        'status_type': 'success',
+        'source': 'Dr. Priya Mehta (Cardiology)',
+        'note': 'Verified during 12-lead ECG session'
+    }
+]
+
 class ArogyaApiHandler(BaseHTTPRequestHandler):
     def _send_cors_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -199,6 +306,22 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
         # 2. API: Patient Dashboard Real Data
         if path in ['/api/v1/patient/dashboard', '/api/v1/patient/melina/dashboard', '/patient/dashboard']:
             self._send_json(200, MELINA_PATIENT_DATA)
+            return
+
+        # API: Patient Reports
+        if path in ['/api/v1/patient/reports', '/patient/reports']:
+            self._send_json(200, MELINA_REPORTS)
+            return
+
+        # API: Vitals History
+        if path in ['/api/v1/patient/vitals-history', '/patient/vitals-history']:
+            self._send_json(200, MELINA_VITALS_HISTORY)
+            return
+
+        # Staff portal APIs (Health Worker, Doctor, Health Officer)
+        staff = staff_portal.handle('GET', path, {})
+        if staff:
+            self._send_json(*staff)
             return
 
         # 3. Static Web Files from frontend/
@@ -343,6 +466,11 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
         path = url.path
         data = self._read_json()
 
+        staff = staff_portal.handle('POST', path, data)
+        if staff:
+            self._send_json(*staff)
+            return
+
         if path in ['/api/v1/triage/session/start', '/triage/session/start']:
             session_id = f"SES-{os.urandom(4).hex().upper()}"
             self._send_json(201, {
@@ -391,7 +519,7 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
 
         if path in ['/api/v1/chronic/checkin/voice', '/chronic/checkin/voice']:
             transcript = data.get('speech_transcript', '')
-            parsed = voice_parser.parse(transcript, language='hi')
+            parsed = voice_parser.parse_checkin_speech(transcript, 'hi')
             self._send_json(200, {
                 'systolic_bp': parsed.systolic_bp or 145,
                 'diastolic_bp': parsed.diastolic_bp or 92,
@@ -492,6 +620,32 @@ class ArogyaApiHandler(BaseHTTPRequestHandler):
                 'quick_stats': quick_stats,
                 'patient_name': 'Melina',
                 'timestamp': 'Just now'
+            })
+            return
+
+        # 3. API: Doctor Dispatch New Report to Patient Dashboard
+        if path in ['/api/v1/patient/reports', '/patient/reports']:
+            new_report = {
+                'id': f"REP-{int(time.time())}",
+                'title': data.get('title', 'Clinical Diagnostic Report'),
+                'category': data.get('category', 'Pathology'),
+                'doctor_name': data.get('doctor_name', 'Dr. Arvind Sharma'),
+                'doctor_title': data.get('doctor_title', 'MD, Consultant Physician'),
+                'hospital': data.get('hospital', 'District Memorial Hospital'),
+                'date': 'Today, ' + time.strftime('%d %b %Y'),
+                'time': time.strftime('%I:%M %p'),
+                'status': data.get('status', 'Verified by Doctor'),
+                'status_type': 'success',
+                'summary': data.get('summary', 'Patient clinical vitals reviewed. Findings are stable.'),
+                'attachment_name': data.get('attachment_name', 'Clinical_Report.pdf'),
+                'is_new': True
+            }
+            MELINA_REPORTS.insert(0, new_report)
+            self._send_json(201, {
+                'status': 'success',
+                'message': 'Report dispatched directly to patient dashboard.',
+                'report': new_report,
+                'reports': MELINA_REPORTS
             })
             return
 

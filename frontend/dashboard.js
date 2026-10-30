@@ -142,6 +142,10 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAiAssistant();
   setupAddVitalModal();
   setupSearchFilter();
+  setupNotificationPanel();
+  setupReportsSection();
+  setupDoctorSendModal();
+  setupVitalsHistoryModal();
 
   // Register PWA Service Worker for Mobile App Installation
   if ('serviceWorker' in navigator) {
@@ -721,6 +725,144 @@ function showToast(message) {
 }
 
 // ================= 12. CONTROLS, PROFILE & SEARCH =================
+const DEFAULT_REPORTS = [
+  {
+    id: "REP-2026-001",
+    title: "Comprehensive Metabolic & Lipid Profile",
+    category: "Pathology",
+    doctor_name: "Dr. Arvind Sharma",
+    doctor_title: "MD, Senior Consultant Physician",
+    hospital: "District Memorial Hospital",
+    date: "29 Oct 2026",
+    time: "11:30 AM",
+    status: "Verified & Stable",
+    status_type: "success",
+    summary: "Fasting blood glucose (95 mg/dL), Total Cholesterol (172 mg/dL), and Triglycerides (130 mg/dL) are within optimal physiological thresholds. Liver and kidney function normal.",
+    attachment_name: "Metabolic_Panel_Melina_Oct2026.pdf",
+    is_new: false
+  },
+  {
+    id: "REP-2026-002",
+    title: "Electrocardiogram (ECG) 12-Lead Rhythm Report",
+    category: "Cardiology",
+    doctor_name: "Dr. Priya Mehta",
+    doctor_title: "DM, Interventional Cardiologist",
+    hospital: "City Heart & Vascular Institute",
+    date: "24 Oct 2026",
+    time: "04:15 PM",
+    status: "Normal Sinus Rhythm",
+    status_type: "normal",
+    summary: "Resting heart rate 80 bpm with regular sinus pattern. Normal PR interval (152 ms) and QTc interval (412 ms). No signs of ischemia or arrhythmia.",
+    attachment_name: "ECG_Report_Melina_Oct24.pdf",
+    is_new: false
+  }
+];
+
+const DEFAULT_NOTIFICATIONS = [
+  {
+    id: "notif-init-1",
+    icon: "📄",
+    title: "New Report from Dr. Arvind Sharma",
+    desc: "Comprehensive Metabolic & Lipid Profile has been verified and added to your reports.",
+    time: "Yesterday, 11:30 AM",
+    unread: true,
+    action: "report"
+  },
+  {
+    id: "notif-init-2",
+    icon: "💓",
+    title: "Vitals Synchronized",
+    desc: "Blood pressure (118/80 mmHg) and glucose (95 mg/dL) updated successfully.",
+    time: "Today, 10:45 AM",
+    unread: false,
+    action: "vitals"
+  }
+];
+
+const DEFAULT_VITALS_HISTORY = [
+  {
+    date: "Today, 30 Oct",
+    time: "10:45 AM",
+    type: "Blood Pressure",
+    value: "118/80 mmHg",
+    status: "Normal",
+    source: "Home Omron Monitor",
+    note: "Resting reading after 15 min rest",
+    color: "#2563EB",
+    icon: "💧"
+  },
+  {
+    date: "Today, 30 Oct",
+    time: "10:00 AM",
+    type: "Heart Rate",
+    value: "88 Bpm",
+    status: "Resting",
+    source: "Smart Health Band",
+    note: "Average resting pulse during morning desk work",
+    color: "#EF4444",
+    icon: "❤️"
+  },
+  {
+    date: "Today, 30 Oct",
+    time: "08:30 AM",
+    type: "Blood Sugar",
+    value: "95 mg/dL",
+    status: "Healthy (Fasting)",
+    source: "Accu-Chek Glucometer",
+    note: "Fasting glucose level before breakfast",
+    color: "#10B981",
+    icon: "🩸"
+  },
+  {
+    date: "Yesterday, 29 Oct",
+    time: "06:15 PM",
+    type: "SpO2 Saturation",
+    value: "98%",
+    status: "Optimal",
+    source: "Pulse Oximeter",
+    note: "Post-evening walk reading",
+    color: "#0891B2",
+    icon: "🫁"
+  },
+  {
+    date: "Yesterday, 29 Oct",
+    time: "02:00 PM",
+    type: "Blood Pressure",
+    value: "120/80 mmHg",
+    status: "Normal",
+    source: "Clinical Checkup",
+    note: "Routine measurement by ASHA Worker",
+    color: "#2563EB",
+    icon: "💧"
+  },
+  {
+    date: "27 Oct 2026",
+    time: "09:00 AM",
+    type: "Body Mass Index",
+    value: "22.4 kg/m²",
+    status: "Normal Weight",
+    source: "Health Kiosk",
+    note: "Height: 165 cm, Weight: 61.0 kg",
+    color: "#8B5CF6",
+    icon: "⚖️"
+  },
+  {
+    date: "24 Oct 2026",
+    time: "04:30 PM",
+    type: "Heart Rate",
+    value: "80 Bpm",
+    status: "Resting Normal",
+    source: "Dr. Priya Mehta (Cardiology)",
+    note: "Verified during 12-lead ECG session",
+    color: "#EF4444",
+    icon: "❤️"
+  }
+];
+
+let currentReports = [...DEFAULT_REPORTS];
+let currentNotifications = [...DEFAULT_NOTIFICATIONS];
+let currentVitalsHistory = [...DEFAULT_VITALS_HISTORY];
+
 function setupNavigation() {
   const pills = document.querySelectorAll(".nav-pill");
   pills.forEach((p) => {
@@ -728,26 +870,66 @@ function setupNavigation() {
       pills.forEach((x) => x.classList.remove("active"));
       p.classList.add("active");
       const tab = p.getAttribute("data-tab");
-      if (tab === "home") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else if (tab === "report") {
-        document.querySelector(".hr-main-card")?.scrollIntoView({ behavior: "smooth" });
-        showToast("Displaying your weekly clinical health summary");
-      }
+      switchToTab(tab);
     });
   });
+}
+
+function switchToTab(tabName) {
+  const homeView = document.getElementById("homeView");
+  const reportView = document.getElementById("reportView");
+  const pills = document.querySelectorAll(".nav-pill");
+
+  pills.forEach((p) => {
+    if (p.getAttribute("data-tab") === tabName) {
+      p.classList.add("active");
+    } else {
+      p.classList.remove("active");
+    }
+  });
+
+  if (tabName === "report") {
+    if (homeView) homeView.style.display = "none";
+    if (reportView) {
+      reportView.style.display = "flex";
+      loadAndRenderReports();
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
+    if (homeView) homeView.style.display = "flex";
+    if (reportView) reportView.style.display = "none";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 function setupProfileDropdown() {
   const menu = document.getElementById("profileMenu");
   const dropdown = document.getElementById("profileDropdown");
+  const avatar = document.getElementById("headerAvatar");
+
+  // Requirement 4: Clicking the avatar of Melina opens Vitals History!
+  if (avatar) {
+    avatar.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openVitalsHistoryModal();
+    });
+  }
 
   menu.addEventListener("click", (e) => {
     e.stopPropagation();
     dropdown.classList.toggle("open");
   });
 
-  const coachLink = dropdown?.querySelector('a[href="#coach"]');
+  const vitalsLink = document.getElementById("dropdownVitalsHistory");
+  if (vitalsLink) {
+    vitalsLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      dropdown.classList.remove("open");
+      openVitalsHistoryModal();
+    });
+  }
+
+  const coachLink = document.getElementById("dropdownAiCoach");
   if (coachLink) {
     coachLink.addEventListener("click", (e) => {
       e.preventDefault();
@@ -774,28 +956,406 @@ function setupProfileDropdown() {
   });
 }
 
+// ================= 13. REPORTS SECTION CONTROLLER =================
+function setupReportsSection() {
+  const filterPills = document.querySelectorAll(".rep-filter-pill");
+  filterPills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+      filterPills.forEach((p) => p.classList.remove("active"));
+      pill.classList.add("active");
+      const cat = pill.getAttribute("data-cat");
+      renderReportsList(cat);
+    });
+  });
+}
+
+async function loadAndRenderReports(filterCat = "all") {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/patient/reports`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        currentReports = data;
+      }
+    }
+  } catch (err) {}
+
+  renderReportsList(filterCat);
+}
+
+function renderReportsList(filterCat = "all") {
+  const feed = document.getElementById("reportsFeed");
+  const totalCountEl = document.getElementById("totalReportsCount");
+  if (totalCountEl) totalCountEl.textContent = currentReports.length;
+  if (!feed) return;
+
+  const filtered = filterCat === "all"
+    ? currentReports
+    : currentReports.filter((r) => r.category.toLowerCase().includes(filterCat.toLowerCase()));
+
+  if (filtered.length === 0) {
+    feed.innerHTML = `
+      <div style="padding: 30px; text-align: center; background: #FFFFFF; border-radius: 20px; border: 1px solid var(--border-card);">
+        <p style="font-size: 14px; font-weight: 700; color: var(--text-primary);">No reports in this category.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Doctors can dispatch new reports using the button above.</p>
+      </div>
+    `;
+    return;
+  }
+
+  feed.innerHTML = filtered.map((rep) => `
+    <div class="report-card ${rep.is_new ? 'new-report' : ''}" id="${rep.id}">
+      <div class="report-card-header">
+        <div class="report-title-group">
+          <div class="report-title">${rep.title}</div>
+          <div class="report-doctor-line">
+            <span>🩺 ${rep.doctor_name}</span>
+            <span style="color: #94A3B8;">•</span>
+            <span style="font-size: 11.5px; color: #64748B;">${rep.doctor_title} (${rep.hospital || "District Hospital"})</span>
+          </div>
+        </div>
+        <div class="report-badges-group">
+          ${rep.is_new ? '<span class="rep-badge new">✨ New Arrival</span>' : ''}
+          <span class="rep-badge verified">✓ ${rep.status || 'Verified'}</span>
+        </div>
+      </div>
+
+      <div class="report-summary-box">
+        ${rep.summary}
+      </div>
+
+      <div class="report-footer-row">
+        <div class="report-attach-pill">
+          <span>📎</span>
+          <span>${rep.attachment_name || "Diagnostic_Report.pdf"}</span>
+          <span style="color: #64748B; font-size: 10.5px;">(${rep.date} • ${rep.time})</span>
+        </div>
+        <div class="report-action-btns">
+          <button type="button" class="btn-report-view" onclick="viewReportPdf('${rep.title.replace(/'/g, "\\'")}')">👁️ View PDF</button>
+          <button type="button" class="btn-report-download" onclick="downloadReportPdf('${(rep.attachment_name || 'Report.pdf').replace(/'/g, "\\'")}')">⬇️ Download</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+window.viewReportPdf = function(title) {
+  showToast(`📄 Displaying digitally signed report: ${title}`);
+};
+
+window.downloadReportPdf = function(filename) {
+  showToast(`📥 Downloading ${filename}...`);
+};
+
+// ================= 14. DOCTOR SEND REPORT MODAL & DISPATCH =================
+function setupDoctorSendModal() {
+  const openBtn = document.getElementById("btnOpenDoctorModal");
+  const modal = document.getElementById("doctorSendReportModal");
+  const closeBtn = document.getElementById("closeDoctorModalBtn");
+  const cancelBtn = document.getElementById("cancelDoctorModalBtn");
+  const form = document.getElementById("doctorSendReportForm");
+
+  if (!modal) return;
+
+  const closeModal = () => { modal.style.display = "none"; };
+  const openModal = () => { modal.style.display = "flex"; };
+
+  if (openBtn) openBtn.addEventListener("click", openModal);
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const docVal = document.getElementById("docSelectDoctor")?.value || "";
+      const docParts = docVal.split("|");
+      const doctorName = docParts[0] || "Dr. Arvind Sharma";
+      const doctorTitle = docParts[1] || "MD, Consultant Physician";
+      const hospital = docParts[2] || "District Memorial Hospital";
+
+      const title = document.getElementById("docReportTitle")?.value || "Clinical Diagnostic Report";
+      const category = document.getElementById("docReportCategory")?.value || "Pathology";
+      const status = document.getElementById("docReportStatus")?.value || "Verified & Stable";
+      const summary = document.getElementById("docReportSummary")?.value || "Patient clinical vitals reviewed. Findings are stable.";
+      const attachName = document.getElementById("docAttachmentName")?.textContent || "Clinical_Diagnostic_Report_Melina.pdf";
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = "Today, " + now.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+
+      const newReport = {
+        id: `REP-${Date.now()}`,
+        title,
+        category,
+        doctor_name: doctorName,
+        doctor_title: doctorTitle,
+        hospital,
+        date: dateStr,
+        time: timeStr,
+        status,
+        status_type: "success",
+        summary,
+        attachment_name: attachName,
+        is_new: true
+      };
+
+      currentReports.unshift(newReport);
+
+      // Requirement 3: Add notification to notification panel
+      const newNotif = {
+        id: `notif-${Date.now()}`,
+        icon: "📄",
+        title: `New Report from ${doctorName}`,
+        desc: `${title} (${category}) has been dispatched to your reports dashboard.`,
+        time: "Just now",
+        unread: true,
+        action: "report",
+        reportId: newReport.id
+      };
+      currentNotifications.unshift(newNotif);
+      renderNotifications();
+
+      // Show pulse badge on notification bell
+      const bellBadge = document.getElementById("bellBadge");
+      if (bellBadge) bellBadge.classList.add("active");
+
+      // Sync to backend via POST
+      try {
+        await fetch(`${API_BASE}/api/v1/patient/reports`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newReport)
+        });
+      } catch (err) {}
+
+      closeModal();
+      renderReportsList();
+      showToast(`🔔 New report received from ${doctorName}!`);
+
+      // Switch to report tab and scroll to new report
+      switchToTab("report");
+      setTimeout(() => {
+        const repEl = document.getElementById(newReport.id);
+        if (repEl) {
+          repEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          repEl.style.boxShadow = "0 0 0 3px #10B981";
+          setTimeout(() => { repEl.style.boxShadow = ""; }, 3000);
+        }
+      }, 250);
+    });
+  }
+}
+
+// ================= 15. NOTIFICATION PANEL =================
+function setupNotificationPanel() {
+  const bellBtn = document.getElementById("bellBtn");
+  const dropdown = document.getElementById("notificationDropdown");
+  const clearBtn = document.getElementById("clearNotifsBtn");
+
+  if (!bellBtn || !dropdown) return;
+
+  renderNotifications();
+
+  bellBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle("open");
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      currentNotifications.forEach((n) => (n.unread = false));
+      const bellBadge = document.getElementById("bellBadge");
+      if (bellBadge) bellBadge.classList.remove("active");
+      renderNotifications();
+      showToast("All notifications marked as read");
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    const notifWrapper = document.getElementById("notifWrapper");
+    if (notifWrapper && !notifWrapper.contains(e.target)) {
+      dropdown.classList.remove("open");
+    }
+  });
+}
+
+function renderNotifications() {
+  const notifList = document.getElementById("notifList");
+  const countBadge = document.getElementById("notifCountBadge");
+  const bellBadge = document.getElementById("bellBadge");
+  if (!notifList) return;
+
+  const unreadCount = currentNotifications.filter((n) => n.unread).length;
+  if (countBadge) {
+    countBadge.textContent = unreadCount > 0 ? `${unreadCount} New` : "All Read";
+    countBadge.style.display = unreadCount > 0 ? "inline-block" : "none";
+  }
+
+  if (bellBadge) {
+    if (unreadCount > 0) {
+      bellBadge.classList.add("active");
+    } else {
+      bellBadge.classList.remove("active");
+    }
+  }
+
+  if (currentNotifications.length === 0) {
+    notifList.innerHTML = `<div class="notif-empty">No notifications yet</div>`;
+    return;
+  }
+
+  notifList.innerHTML = currentNotifications.map((n) => `
+    <div class="notif-card ${n.unread ? 'unread' : ''}" onclick="handleNotificationClick('${n.id}')">
+      <div class="notif-icon">${n.icon || '🔔'}</div>
+      <div class="notif-body">
+        <div class="notif-item-title">${n.title}</div>
+        <div class="notif-item-desc">${n.desc}</div>
+        <div class="notif-item-time">${n.time}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+window.handleNotificationClick = function(notifId) {
+  const notif = currentNotifications.find((n) => n.id === notifId);
+  if (notif) {
+    notif.unread = false;
+    renderNotifications();
+    const dropdown = document.getElementById("notificationDropdown");
+    if (dropdown) dropdown.classList.remove("open");
+
+    if (notif.action === "report") {
+      switchToTab("report");
+      if (notif.reportId) {
+        setTimeout(() => {
+          const el = document.getElementById(notif.reportId);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 150);
+      }
+    } else if (notif.action === "vitals") {
+      openVitalsHistoryModal();
+    }
+  }
+};
+
+// ================= 16. MELINA VITALS HISTORY MODAL =================
+function setupVitalsHistoryModal() {
+  const modal = document.getElementById("vitalsHistoryModal");
+  const closeBtn = document.getElementById("closeVitalsHistoryBtn");
+  const closeFooterBtn = document.getElementById("btnCloseHistoryFooter");
+  const logNewBtn = document.getElementById("btnLogFromHistory");
+
+  if (!modal) return;
+
+  const closeModal = () => { modal.style.display = "none"; };
+
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (closeFooterBtn) closeFooterBtn.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  if (logNewBtn) {
+    logNewBtn.addEventListener("click", () => {
+      closeModal();
+      document.getElementById("addVitalModal").style.display = "flex";
+    });
+  }
+
+  const filterBtns = document.querySelectorAll(".vh-filter-btn");
+  filterBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const f = btn.getAttribute("data-filter");
+      renderVitalsHistoryFeed(f);
+    });
+  });
+}
+
+function openVitalsHistoryModal() {
+  const modal = document.getElementById("vitalsHistoryModal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  renderVitalsHistoryFeed("all");
+}
+
+function renderVitalsHistoryFeed(filterType = "all") {
+  const feed = document.getElementById("vitalsHistoryFeed");
+  if (!feed) return;
+
+  const filtered = filterType === "all"
+    ? currentVitalsHistory
+    : currentVitalsHistory.filter((v) => v.type.toLowerCase().includes(filterType.toLowerCase()));
+
+  if (filtered.length === 0) {
+    feed.innerHTML = `<div style="text-align:center; padding: 24px; color: var(--text-muted); font-size: 13px;">No readings found for this filter.</div>`;
+    return;
+  }
+
+  feed.innerHTML = filtered.map((item) => `
+    <div class="history-card">
+      <div class="history-card-left">
+        <div class="history-type-icon" style="background: ${item.color}18; color: ${item.color};">
+          ${item.icon || '🩺'}
+        </div>
+        <div class="history-details">
+          <div class="history-type-name">${item.type}</div>
+          <div class="history-meta-sub">${item.date} • ${item.time} (${item.source})</div>
+          ${item.note ? `<div style="font-size: 10.5px; color: #64748B;">"${item.note}"</div>` : ''}
+        </div>
+      </div>
+      <div class="history-card-right">
+        <div class="history-val">${item.value}</div>
+        <span class="history-badge ${item.status.toLowerCase().includes('normal') || item.status.toLowerCase().includes('optimal') || item.status.toLowerCase().includes('healthy') ? 'badge-green' : 'badge-blue'}">
+          ${item.status}
+        </span>
+      </div>
+    </div>
+  `).join("");
+}
+
 function setupTimeRangeFilter() {
   const select = document.getElementById("timeRangeSelect");
-  select.addEventListener("change", (e) => {
-    renderSplineChart(e.target.value);
-  });
+  if (select) {
+    select.addEventListener("change", (e) => {
+      renderSplineChart(e.target.value);
+    });
+  }
 }
 
 function setupSearchFilter() {
   const searchInput = document.getElementById("searchInput");
+  if (!searchInput) return;
+
   searchInput.addEventListener("input", (e) => {
     const term = e.target.value.toLowerCase().trim();
     if (!term) return;
 
-    if (term.includes("pressure") || term.includes("bp")) {
+    if (term.includes("report") || term.includes("lab") || term.includes("doctor")) {
+      switchToTab("report");
+    } else if (term.includes("vital") || term.includes("history")) {
+      openVitalsHistoryModal();
+    } else if (term.includes("pressure") || term.includes("bp")) {
+      switchToTab("home");
       document.querySelector(".card-bp")?.scrollIntoView({ behavior: "smooth" });
     } else if (term.includes("heart") || term.includes("bpm")) {
+      switchToTab("home");
       document.querySelector(".hr-main-card")?.scrollIntoView({ behavior: "smooth" });
     } else if (term.includes("sugar") || term.includes("glucose")) {
+      switchToTab("home");
       document.querySelector(".card-sugar")?.scrollIntoView({ behavior: "smooth" });
     } else if (term.includes("step") || term.includes("walk")) {
+      switchToTab("home");
       document.querySelector(".step-card")?.scrollIntoView({ behavior: "smooth" });
     } else if (term.includes("nutrition") || term.includes("carb")) {
+      switchToTab("home");
       document.querySelector(".nutrition-card")?.scrollIntoView({ behavior: "smooth" });
     }
   });

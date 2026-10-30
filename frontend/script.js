@@ -90,7 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
       sessionStorage.setItem('meditek_logged_in', 'true');
       window.location.href = 'patient_dashboard.html';
     } else {
-      alert(`🎉 Logged In as ${selectedOtherRole}\n• Identifier: ${mobileOrId}\n• Session Authenticated under DPDP Act 2023`);
+      const rolePages = {
+        'Health Worker': 'health_worker.html',
+        'Doctor': 'doctor.html',
+        'Health Officer': 'officer.html'
+      };
+      sessionStorage.setItem('arogya_staff_role', selectedOtherRole);
+      sessionStorage.setItem('arogya_staff_id', mobileOrId);
+      window.location.href = rolePages[selectedOtherRole];
     }
   });
 });

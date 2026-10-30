@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meditek-cache-v6';
+const CACHE_NAME = 'meditek-cache-v10';
 const ASSETS_TO_CACHE = [
   './',
   'patient_dashboard.html',
@@ -7,6 +7,14 @@ const ASSETS_TO_CACHE = [
   'dashboard.js',
   'style.css',
   'script.js',
+  'staff.css',
+  'staff.js',
+  'health_worker.html',
+  'health_worker.js',
+  'doctor.html',
+  'doctor.js',
+  'officer.html',
+  'officer.js',
   'manifest.json',
   'assets/melina_avatar.jpg',
   'assets/ai_orb.jpg',

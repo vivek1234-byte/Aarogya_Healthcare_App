@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ArogyaSaathi - Doctor</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="stylesheet" href="staff.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="staff-wrapper">
+    <div class="staff-card">
+
+      <!-- ================= HEADER ================= -->
+      <header class="staff-header">
+        <div class="brand-logo">
+          <svg class="brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 28C16 28 4 20 4 11.5C4 7.35786 7.35786 4 11.5 4C13.6826 4 15.6575 4.93128 17 6.42531C18.3425 4.93128 20.3174 4 22.5 4C26.6421 4 30 7.35786 30 11.5C30 20 16 28 16 28Z" fill="url(#brandGradient)" />
+            <path d="M16 9V17M12 13H20" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <defs>
+              <linearGradient id="brandGradient" x1="4" y1="4" x2="30" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#06B6D4" />
+                <stop offset="1" stop-color="#3B82F6" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div>
+            <div class="brand-name">ArogyaSaathi</div>
+            <div class="brand-role">PHC Doctor</div>
+          </div>
+        </div>
+
+        <nav class="nav-pills">
+          <button class="nav-pill active" data-tab="queue">Escalations <span class="nav-count hidden" id="pendingCount"></span></button>
+          <button class="nav-pill" data-tab="patients">Patient Trends</button>
+          <button class="nav-pill" data-tab="audit">Audit Trail</button>
+        </nav>
+
+        <div class="header-user">
+          <div class="user-chip">
+            <div class="user-name">Medical Officer</div>
+            <div class="user-id" data-staff-id></div>
+          </div>
+          <div class="user-avatar">🩺</div>
+          <a href="index.html" class="btn-signout" data-signout>Sign Out</a>
+        </div>
+      </header>
+
+      <!-- ================= VIEW 1: ESCALATION QUEUE ================= -->
+      <section class="staff-view active" id="view-queue">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title">Escalation Queue</h1>
+            <p class="view-subtitle">Cases escalated by voice triage red flags, referrals and chronic deterioration. Your agree or override decision is saved as a labelled case for improving triage.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="refreshQueueBtn">↻ Refresh</button>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-tile"><div class="stat-label">Pending review</div><div class="stat-value red" id="statPending">–</div></div>
+          <div class="stat-tile"><div class="stat-label">Emergencies</div><div class="stat-value orange" id="statEmergency">–</div></div>
+          <div class="stat-tile"><div class="stat-label">Labelled cases</div><div class="stat-value" id="statLabelled">–</div><div class="stat-note">Clinician feedback</div></div>
+          <div class="stat-tile"><div class="stat-label">Agreement with system</div><div class="stat-value green" id="statAgreement">–</div><div class="stat-note">Target ≥ 90%</div></div>
+        </div>
+
+        <div class="grid-split">
+          <div class="panel">
+            <div class="panel-title">Queue</div>
+            <div class="segmented" id="queueFilter" style="margin: 8px 0 14px;">
+              <button type="button" class="active" data-filter="PENDING">Pending</button>
+              <button type="button" data-filter="REVIEWED">Reviewed</button>
+              <button type="button" data-filter="ALL">All</button>
+            </div>
+            <div class="list" id="queueList"><p class="empty-state">Loading…</p></div>
+          </div>
+
+          <div id="caseDetail">
+            <div class="panel"><p class="empty-state">Select a case to review.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 2: PATIENT TRENDS ================= -->
+      <section class="staff-view" id="view-patients">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title">Patient Trends</h1>
+            <p class="view-subtitle">BP, sugar and medicine adherence for chronic patients followed up by health workers.</p>
+          </div>
+        </div>
+        <div class="grid-split">
+          <div class="panel">
+            <div class="panel-title">Chronic patients</div>
+            <div class="panel-sub">Sorted by risk</div>
+            <div class="list" id="trendList"><p class="empty-state">Loading…</p></div>
+          </div>
+          <div class="panel" id="trendDetail"><p class="empty-state">Select a patient.</p></div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 3: AUDIT ================= -->
+      <section class="staff-view" id="view-audit">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title">Audit Trail</h1>
+            <p class="view-subtitle">Every input, rule fired, system output and human override, in order.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="refreshAuditBtn">↻ Refresh</button>
+        </div>
+        <div class="notice notice-green" id="auditStatus" style="margin-bottom: 14px;">Loading…</div>
+        <div class="audit-table-wrap">
+          <table class="audit-table">
+            <thead><tr><th>#</th><th>Time</th><th>Event</th><th>Actor</th><th>Details</th><th>Hash</th></tr></thead>
+            <tbody id="auditBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="staff.js"></script>
+  <script src="doctor.js"></script>
+</body>
+</html>

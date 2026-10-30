@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ArogyaSaathi - Health Officer</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="stylesheet" href="staff.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="staff-wrapper">
+    <div class="staff-card">
+
+      <!-- ================= HEADER ================= -->
+      <header class="staff-header">
+        <div class="brand-logo">
+          <svg class="brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 28C16 28 4 20 4 11.5C4 7.35786 7.35786 4 11.5 4C13.6826 4 15.6575 4.93128 17 6.42531C18.3425 4.93128 20.3174 4 22.5 4C26.6421 4 30 7.35786 30 11.5C30 20 16 28 16 28Z" fill="url(#brandGradient)" />
+            <path d="M16 9V17M12 13H20" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <defs>
+              <linearGradient id="brandGradient" x1="4" y1="4" x2="30" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#06B6D4" />
+                <stop offset="1" stop-color="#3B82F6" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div>
+            <div class="brand-name">ArogyaSaathi</div>
+            <div class="brand-role">Block / District Officer</div>
+          </div>
+        </div>
+
+        <nav class="nav-pills">
+          <button class="nav-pill active" data-tab="map">Outbreak Map <span class="nav-count hidden" id="alertCount"></span></button>
+          <button class="nav-pill" data-tab="signals">Signals</button>
+          <button class="nav-pill" data-tab="audit">Audit Trail</button>
+        </nav>
+
+        <div class="header-user">
+          <div class="user-chip">
+            <div class="user-name">Health Officer</div>
+            <div class="user-id" data-staff-id></div>
+          </div>
+          <div class="user-avatar">👮</div>
+          <a href="index.html" class="btn-signout" data-signout>Sign Out</a>
+        </div>
+      </header>
+
+      <!-- ================= VIEW 1: OUTBREAK MAP ================= -->
+      <section class="staff-view active" id="view-map">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title" id="blockTitle">Block Outbreak Early Warning</h1>
+            <p class="view-subtitle">Clinic visits, pharmacy sales and school absenteeism are combined per village. Alerts are raised when several villages show unusual rises together.</p>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-tile"><div class="stat-label">Villages monitored</div><div class="stat-value" id="statVillages">–</div></div>
+          <div class="stat-tile"><div class="stat-label">Active alerts</div><div class="stat-value red" id="statAlerts">–</div></div>
+          <div class="stat-tile"><div class="stat-label">Earlier than clinic-only</div><div class="stat-value green" id="statLead">–</div><div class="stat-note">Target ≥ 3 days</div></div>
+          <div class="stat-tile"><div class="stat-label">False alarms / month</div><div class="stat-value" id="statFalse">–</div><div class="stat-note">Target ≤ 1 per block</div></div>
+        </div>
+
+        <div class="grid-split-wide">
+          <div class="panel">
+            <div class="panel-title">Village map</div>
+            <div class="panel-sub">Tap a village to see its signals.</div>
+            <div class="map-box" id="villageMap"></div>
+            <div class="chart-legend">
+              <span><span class="legend-dot" style="background:#FCA5A5"></span>Outbreak</span>
+              <span><span class="legend-dot" style="background:#FDBA74"></span>Warning</span>
+              <span><span class="legend-dot" style="background:#FDE68A"></span>Watch</span>
+              <span><span class="legend-dot" style="background:#A7F3D0"></span>Normal</span>
+              <span><span class="legend-dot" style="background:transparent;border:2px dashed #DC2626"></span>Alert cluster</span>
+            </div>
+          </div>
+
+          <div id="alertPanel">
+            <div class="panel"><p class="empty-state">Loading alerts…</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 2: SIGNALS ================= -->
+      <section class="staff-view" id="view-signals">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title">Syndromic Signals</h1>
+            <p class="view-subtitle">Daily counts for the last 30 days. Pharmacy sales and absenteeism usually rise before clinic visits.</p>
+          </div>
+          <select id="signalVillage" class="form-select" style="max-width: 260px;"></select>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title" id="signalTitle">Village signals</div>
+          <div class="panel-sub" id="signalSub"></div>
+          <div class="chart-box" id="signalChart"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">All villages today</div>
+          <div class="audit-table-wrap" style="margin-top: 10px;">
+            <table class="audit-table" style="min-width: 560px;">
+              <thead><tr><th>Village</th><th>Status</th><th>Anomaly score (z)</th><th>Clinic</th><th>Pharmacy ORS</th><th>Absent</th></tr></thead>
+              <tbody id="villageTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 3: AUDIT ================= -->
+      <section class="staff-view" id="view-audit">
+        <div class="view-head">
+          <div>
+            <h1 class="view-title">Audit Trail</h1>
+            <p class="view-subtitle">Alerts raised, acknowledgements and every logged decision across the block.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="refreshAuditBtn">↻ Refresh</button>
+        </div>
+        <div class="notice notice-green" id="auditStatus" style="margin-bottom: 14px;">Loading…</div>
+        <div class="audit-table-wrap">
+          <table class="audit-table">
+            <thead><tr><th>#</th><th>Time</th><th>Event</th><th>Actor</th><th>Details</th><th>Hash</th></tr></thead>
+            <tbody id="auditBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="staff.js"></script>
+  <script src="officer.js"></script>
+</body>
+</html>
